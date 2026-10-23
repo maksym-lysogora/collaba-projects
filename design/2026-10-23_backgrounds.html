@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Collaba Projects — 10 варіантів тла</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Jost:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Ten candidate backgrounds for the planner, each with the same sample day column on top, so only the ground changes. */
+:root{--kraft:#D6C09A;--ink:#24272B;--muted:#574F40;--hair:#B59C72;--paper:#F3EAD7;--raised:#ECDFC6;
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .17 0 0 0 0 .12 0 0 0 1.1 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fibre:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .55' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .24 0 0 0 0 .13 0 0 0 .9 -.25'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23f)'/%3E%3C/svg%3E");
+  color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#C9B48D;color:var(--ink);font-family:'Jost','Segoe UI',sans-serif;padding:32px max(16px,3vw) 64px}
+h1{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:30px;margin:0 0 6px}
+.lead{max-width:70ch;margin:0 0 28px;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+.v{display:flex;flex-direction:column;gap:10px}
+.tile{position:relative;height:330px;border:2px solid var(--ink);overflow:hidden;background-color:var(--kraft);padding:26px}
+.tile::after{content:"";position:absolute;inset:0;background-image:var(--noise);opacity:.14;mix-blend-mode:multiply;pointer-events:none}
+.v h2{margin:0;font-family:'Oswald',sans-serif;font-weight:500;font-size:19px;text-transform:uppercase;letter-spacing:.06em;display:flex;gap:10px;align-items:baseline}
+.v h2 b{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;border:1px solid var(--ink);padding:0 6px}
+.v p{margin:0;font-size:14px;color:var(--muted);line-height:1.45}
+/* the sample day */
+.day{position:relative;z-index:1;width:210px;background:color-mix(in srgb,#E2D0AF 70%,transparent);border:1px solid var(--hair);border-top:2px solid var(--ink);padding:10px;display:flex;flex-direction:column;gap:7px}
+.dh{display:flex;justify-content:space-between;align-items:baseline;font-family:'Oswald',sans-serif;text-transform:uppercase}
+.dh b{font-weight:500;font-size:13px;letter-spacing:.1em;color:var(--muted)}.dh span{font-size:22px;font-weight:600}
+.dh i{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+.card{background:var(--c);color:var(--paper);padding:9px 10px;font-size:13.5px;font-weight:500;display:flex;flex-direction:column;gap:4px}
+.card small{font-family:'IBM Plex Mono',monospace;font-size:11px;opacity:.85;font-weight:400}
+.card.plan{background:var(--raised);color:var(--ink);box-shadow:inset 0 0 0 2px var(--c),inset 7px 0 0 var(--c);padding-left:16px}
+.card.plan small{color:var(--muted)}
+.pick{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<h1>Тло планера — 10 варіантів</h1>
+<p class="lead">Однаковий день із двома плашками на десяти різних тлах, усе в межах стилю «Креслення»: крафт, туш, приглушені фарби. Напишіть номер, який подобається, або два номери, щоб їх поєднати.</p>
+<div class="grid" id="grid"></div>
+<script>
+const day=`<div class="day"><div class="dh"><div><b>Пт</b> <span>23</span></div><i>2 г з 5 г</i></div>
+  <div class="card" style="--c:#2A3AAB">E40<small>2:00 / 3 г</small></div>
+  <div class="card plan" style="--c:#9A4630">Японський будинок<small>0:00 / 2 г</small></div></div>`;
+const V=[
+ ['Чистий крафт','Без візерунка: лише колір пакувального паперу й дрібне зерно. Найтихіший варіант.',''],
+ ['Волокна','Крафт із видимими поздовжніми волокнами, як у грубого пакувального паперу.','background-image:var(--fibre)'],
+ ['Крапкова сітка','Дрібні крапки кожні 24 px, як на папері для ескізів (dot grid). Допомагає вирівнювати, але не ріже око.','background-image:radial-gradient(rgba(36,39,43,.28) 1px,transparent 1.4px);background-size:24px 24px'],
+ ['Міліметрівка','Справжній міліметровий папір теракотовою фарбою: дрібна сітка й крупна кожні 5 клітинок, дуже бліда.','background-image:linear-gradient(rgba(154,70,48,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(154,70,48,.22) 1px,transparent 1px),linear-gradient(rgba(154,70,48,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(154,70,48,.09) 1px,transparent 1px);background-size:40px 40px,40px 40px,8px 8px,8px 8px'],
+ ['Ватман у лінію','Лише горизонтальні лінії кожні 28 px, як лінування під написи на кресленні.','background-image:linear-gradient(rgba(36,39,43,.12) 1px,transparent 1px);background-size:100% 28px'],
+ ['Колонки Баухаусу','Ледь темніші вертикальні смуги — модульна сітка з 7 колонок, як дні тижня.','background-image:repeating-linear-gradient(90deg,rgba(36,39,43,.045) 0 14.2857%,transparent 14.2857% 28.5714%)'],
+ ['Аркуш у рамці','Світліший аркуш кальки на крафтовому столі: рамка креслення 2 px і тонка внутрішня лінія, як поле аркуша.','background-image:linear-gradient(#EADBBF,#EADBBF);background-size:calc(100% - 28px) calc(100% - 28px);background-position:center;background-repeat:no-repeat;box-shadow:inset 0 0 0 14px var(--kraft),inset 0 0 0 16px var(--ink),inset 0 0 0 21px #EADBBF,inset 0 0 0 22px rgba(36,39,43,.5)'],
+ ['Тонке штрихування','Увесь фон у дуже блідих лініях 45°, як заливка перерізу на кресленні.','background-image:repeating-linear-gradient(45deg,rgba(36,39,43,.07) 0 1px,transparent 1px 9px)'],
+ ['Растр із кута','Друкарський растр: крапки густі в куті й розходяться до центру, як на старому плакаті.','background-image:radial-gradient(rgba(42,58,171,.30) 1.6px,transparent 2px);background-size:12px 12px;-webkit-mask-image:radial-gradient(circle at 100% 100%,#000,transparent 70%)'],
+ ['Осі креслення','Рідкі осьові лінії штрихпунктиром кожні 240 px, як координатні осі на плані.','background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'240\'%3E%3Cpath d=\'M120 0V240M0 120H240\' stroke=\'%2324272B\' stroke-opacity=\'.22\' stroke-dasharray=\'18 5 3 5\'/%3E%3C/svg%3E")'],
+];
+const g=document.getElementById('grid');
+V.forEach(([n,d,css],i)=>{
+  const masked=css.includes('mask-image');
+  g.insertAdjacentHTML('beforeend',`<div class="v"><div class="tile" style="${masked?'':css}">${masked?`<div style="position:absolute;inset:0;${css}"></div>`:''}${day}</div>
+  <h2><b>${String(i+1).padStart(2,'0')}</b>${n}</h2><p>${d}</p></div>`);
+});
+</script>
+</body>
+</html>

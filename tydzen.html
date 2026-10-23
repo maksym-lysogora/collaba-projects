@@ -176,15 +176,19 @@ button.chip{cursor:pointer}
 .adddy:hover{border-style:solid;color:var(--fg);background:var(--raised)}
 .empty{color:var(--muted);font-size:13px;padding:6px 2px}
 
-/* week wheel */
-.wheel{display:flex;flex-direction:column;gap:10px}
-.wk-ghost{position:relative;display:flex;flex-direction:column;gap:6px;max-height:130px;overflow:hidden;opacity:.32;filter:grayscale(1);cursor:pointer;transition:opacity .15s}
-.wk-ghost:hover{opacity:.6}
+/* week wheel: neighbouring weeks are shown whole, hatched like an empty day, with their inks muted */
+.wheel{display:flex;flex-direction:column;gap:14px}
+.wheel.slide-down{animation:wkdown .28s ease-out}
+.wheel.slide-up{animation:wkup .28s ease-out}
+@keyframes wkdown{from{transform:translateY(60px);opacity:.5}to{transform:none;opacity:1}}
+@keyframes wkup{from{transform:translateY(-60px);opacity:.5}to{transform:none;opacity:1}}
+.wk-ghost{display:flex;flex-direction:column;gap:6px;cursor:pointer;opacity:.62}
+.wk-ghost:hover{opacity:.85}
 .wk-ghost *{pointer-events:none}
-.wk-ghost.prev{justify-content:flex-end;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 70%);mask-image:linear-gradient(to bottom,transparent,#000 70%)}
-.wk-ghost.prev .wk-ghost-l{order:2}
-.wk-ghost.next{-webkit-mask-image:linear-gradient(to top,transparent,#000 70%);mask-image:linear-gradient(to top,transparent,#000 70%)}
-.wk-ghost .week{flex:none}
+.wk-ghost .day{background:repeating-linear-gradient(45deg,var(--hair) 0 1px,transparent 1px 12px);border-style:dashed;min-height:150px}
+.wk-ghost .day.today{border-top:2px dashed var(--line)}
+.wk-ghost .card{filter:saturate(.35) contrast(.85);opacity:.75}
+.wk-ghost .adddy{display:none}
 .wk-ghost-l{margin:0;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--fg)}
 /* month view */
 @media (max-width:900px){.mscroll{overflow-x:auto}}
@@ -690,7 +694,7 @@ function viewWeek(seg){
   const mon=addDays(mondayOf(new Date()),ui.wk*7),end=addDays(mon,6);
   const wt=sum(totals(mon.getTime(),addDays(mon,7).getTime())),{days,wplan}=weekDays(mon);
   return nav(seg,weekTitle(mon,end),`<span class="dtot num">Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}</span>`)+tray()
-    +`<div class="wheel" id="wheel">${ghostWeek(-1)}<div class="week cur">${days}</div>${ghostWeek(1)}</div>`;
+    +`<div class="wheel ${ui.slide||''}" id="wheel">${ghostWeek(-1)}<div class="week cur">${days}</div>${ghostWeek(1)}${ghostWeek(2)}</div>`;
 }
 function viewMonth(seg){
   const n=new Date(),first=new Date(n.getFullYear(),n.getMonth()+ui.mo,1),last=new Date(first.getFullYear(),first.getMonth()+1,0);
@@ -877,7 +881,7 @@ function onClick(e){
   else if(a==='menu'){ui.menu={k:d.d,edit:null};ui.mq='';ui.msel=null;ui.mh=2;renderMain();$('#aq')?.focus()}
   else if(a==='edit-h'){const it=planOf(d.d).find(x=>x.p===d.p);ui.menu={k:d.d,edit:d.p};ui.mh=it?it.h||0:0;renderMain()}
   else if(a==='mclose'){ui.menu=null;renderMain()}
-  else if(a==='wkgo'){ui.wk+=Number(d.n);ui.menu=null;ui.exp=null;renderMain()}
+  else if(a==='wkgo'){ui.slide=Number(d.n)>0?'slide-down':'slide-up';ui.wk+=Number(d.n);ui.menu=null;ui.exp=null;renderMain();ui.slide=''}
   else if(a==='cexp'){const key=d.d+'|'+d.p;ui.exp=ui.exp===key?null:key;renderMain()}
   else if(a==='cx-spent'){const h=Math.max(0,Number($('#cxh').value)||0),mi=Math.max(0,Number($('#cxm').value)||0);setSpent(d.p,d.d,(h*60+mi)*6e4);save();renderMain()}
   else if(a==='cx-goal'){const it=planItem(d.d,d.p);if(it){it.h=Number(d.h);delete state.notified[d.d+':'+d.p];save();renderMain()}}
@@ -962,7 +966,7 @@ document.addEventListener('wheel',e=>{
   if(Date.now()<wheelLock)return;
   wheelAcc+=e.deltaY;
   if(Math.abs(wheelAcc)<60)return;
-  ui.wk+=wheelAcc>0?1:-1;wheelAcc=0;wheelLock=Date.now()+350;ui.menu=null;ui.exp=null;renderMain();
+  ui.slide=wheelAcc>0?'slide-down':'slide-up';ui.wk+=wheelAcc>0?1:-1;wheelAcc=0;wheelLock=Date.now()+320;ui.menu=null;ui.exp=null;renderMain();ui.slide='';
 },{passive:false});
 document.addEventListener('click',onClick);
 document.addEventListener('change',onChange);
