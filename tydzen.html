@@ -361,6 +361,25 @@ form label input,form label select{font-family:var(--font);text-transform:none;l
 :root[data-shape="sq"] .dh .dn{width:auto;height:auto;border:0;border-radius:0;margin-left:6px;font-size:22px}
 :root[data-shape="sq"] .today .dn{width:38px;height:38px;border-radius:50%;font-size:19px}
 :root[data-shape="sq"] .day.today,:root[data-shape="sq"] .mcell.today{box-shadow:inset 0 4px 0 var(--sun)}
+/* ---- Balance (2026-10-23): "Прямі" = mostly rectangles with soft 6 px corners; round accents where they mean something:
+   chips and switches are pills, play / remove are circles, today's date is a filled disc. ---- */
+:root[data-shape="sq"] .card,:root[data-shape="sq"] .day,:root[data-shape="sq"] .mcell,:root[data-shape="sq"] .panel,:root[data-shape="sq"] .cexp,
+:root[data-shape="sq"] .addf,:root[data-shape="sq"] .alert,:root[data-shape="sq"] .banner,:root[data-shape="sq"] .prow,:root[data-shape="sq"] .timer{border-radius:6px}
+:root[data-shape="sq"] .chip,:root[data-shape="sq"] .seg,:root[data-shape="sq"] .btn.primary,:root[data-shape="sq"] .hchip,:root[data-shape="sq"] .toast{border-radius:999px}
+:root[data-shape="sq"] .x,:root[data-shape="sq"] .pp,:root[data-shape="sq"] .sw,:root[data-shape="sq"] .cpick{border-radius:50%}
+:root[data-shape="sq"] .track,:root[data-shape="sq"] .fill{border-radius:999px}
+/* today: tinted column, thick sun band, a bigger disc and the word "сьогодні" */
+.wk .day.today,.mcell.today{background:color-mix(in srgb,var(--sun) 13%,var(--surface))!important;box-shadow:inset 0 6px 0 var(--sun)!important;border-color:color-mix(in srgb,var(--sun) 55%,var(--hair))}
+.day.today .dh b::after{content:" · сьогодні";color:var(--now);letter-spacing:.06em}
+.today .dn,:root[data-shape="sq"] .today .dn{width:44px;height:44px;font-size:22px;border-radius:50%;background:var(--sun);color:#2B2E33;border:0;box-shadow:0 0 0 3px color-mix(in srgb,var(--sun) 35%,transparent)}
+/* week frame: every week snaps to a fixed line under the header; the week in the frame is the active one.
+   The frame's top edge stays put, it grows downward with the week. */
+html{scroll-snap-type:y mandatory}
+#wkframe{position:fixed;top:calc(var(--snap,200px) - 10px);height:0;border:2px solid var(--line);border-radius:10px;pointer-events:none;z-index:3;transition:height .35s cubic-bezier(.2,.8,.2,1),opacity .2s;opacity:0}
+#wkframe.on{opacity:1}
+.wk{scroll-snap-align:start;scroll-margin-top:var(--snap,200px)}
+
+.wheel{padding-top:10px}
 </style>
 
 <div class="top">
@@ -375,6 +394,7 @@ form label input,form label select{font-family:var(--font);text-transform:none;l
 <main id="main"></main>
 <div class="toast" id="toast" hidden></div>
 <div id="grain" aria-hidden="true"></div>
+<div id="wkframe" aria-hidden="true"></div>
 <div id="sun" aria-hidden="true"></div>
 <div class="alert" id="alert" role="alert" hidden></div>
 
@@ -612,6 +632,8 @@ function renderMain(){
   const demo=state.demo?`<div class="banner"><span>Це приклади, щоб було видно, як усе працює. Додайте свої проєкти й приберіть приклади.</span><button class="btn sm" data-act="clear-demo">Видалити приклади</button></div>`:'';
   $('#main').innerHTML=demo+(ui.tab==='plan'?viewPlan():ui.tab==='projects'?viewProjects():viewReport());
   document.documentElement.style.setProperty('--toph',(document.querySelector('.top')?.offsetHeight||0)+'px');
+  requestAnimationFrame(()=>document.documentElement.style.setProperty('--snap',((document.querySelector('.top')?.offsetHeight||0)+(document.querySelector('.pbar')?.offsetHeight||0)+14)+'px'));
+  requestAnimationFrame(placeFrame);
   if(ui.tab==='plan'&&ui.view==='week'&&ui.scrollWeek){ui.scrollWeek=false;requestAnimationFrame(()=>scrollToWeek(ui.wk,false))}
 }
 
@@ -785,22 +807,36 @@ function viewWeek(seg){
   const w=weekInfo(ui.wk);
   return `<div class="pbar"><div class="phead"><h2 id="wkTitle">${w.title}</h2><span class="sp"></span><span class="dtot num" id="wkInfo">${w.info}</span>${seg}</div>${tray()}</div><div class="wheel" id="wheel">${html}</div>`;
 }
+/* The frame is fixed on screen just under the header; weeks scroll under it and snap into it.
+   Only its height changes (animated), following the active week. */
+let frameRO=null;
+function placeFrame(){
+  const fr=document.getElementById('wkframe'),wheel=document.getElementById('wheel'),cur=wheel&&wheel.querySelector('.wk.cur');
+  if(!fr)return;
+  if(ui.tab!=='plan'||ui.view!=='week'||!cur){fr.classList.remove('on');return}
+  const r=wheel.getBoundingClientRect();
+  fr.style.left=(r.left-10)+'px';fr.style.width=(r.width+20)+'px';fr.style.height=(cur.offsetHeight+20)+'px';fr.classList.add('on');
+  if(!frameRO&&window.ResizeObserver)frameRO=new ResizeObserver(()=>placeFrame());
+  if(frameRO){frameRO.disconnect();frameRO.observe(cur)}
+}
+addEventListener('resize',placeFrame);
 /* Called while scrolling: pick the week closest to the middle of the screen and make it the active one. */
 function syncActiveWeek(){
   const wheel=document.getElementById('wheel');if(!wheel)return;
-  // The reference line sits just under the pinned header: the week crossing it (or nearest to it) is active.
-  const bar=document.querySelector('.pbar'),ref=(bar?bar.getBoundingClientRect().bottom:0)+120;let best=null,dist=1e9;
-  for(const el of wheel.querySelectorAll('.wk')){const r=el.getBoundingClientRect(),d=r.top<=ref&&r.bottom>=ref?0:Math.min(Math.abs(r.top-ref),Math.abs(r.bottom-ref));if(d<dist){dist=d;best=el}}
+  // The frame line sits just under the pinned header; the week whose top is nearest to it is active.
+  const ref=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--snap'))||200;let best=null,dist=1e9;
+  for(const el of wheel.querySelectorAll('.wk')){const r=el.getBoundingClientRect(),d=Math.abs(r.top-ref)+(r.top>ref+40?40:0);if(d<dist){dist=d;best=el}}
   if(!best)return;
   const n=Number(best.dataset.wk);if(n===ui.wk)return;
   ui.wk=n;ui.menu=null;
   for(const el of wheel.querySelectorAll('.wk'))el.classList.toggle('cur',el===best);
+  placeFrame();
   const w=weekInfo(n);$('#wkTitle').textContent=w.title;$('#wkInfo').innerHTML=w.info;
 }
 function scrollToWeek(n,smooth){
   const el=document.querySelector(`.wk[data-wk="${n}"]`);if(!el)return false;
   const toph=(document.querySelector('.top')?.offsetHeight||0)+(document.querySelector('.pbar')?.offsetHeight||0)+16;
-  scrollTo({top:el.getBoundingClientRect().top+scrollY-toph,behavior:smooth?'smooth':'auto'});
+  scrollTo({top:el.getBoundingClientRect().top+scrollY-toph+2,behavior:smooth?'smooth':'auto'});
   return true;
 }
 function viewMonth(seg){
