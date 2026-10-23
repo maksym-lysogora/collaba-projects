@@ -176,20 +176,24 @@ button.chip{cursor:pointer}
 .adddy:hover{border-style:solid;color:var(--fg);background:var(--raised)}
 .empty{color:var(--muted);font-size:13px;padding:6px 2px}
 
-/* week wheel: neighbouring weeks are shown whole, hatched like an empty day, with their inks muted */
-.wheel{display:flex;flex-direction:column;gap:14px}
-.wheel.slide-down{animation:wkdown .28s ease-out}
-.wheel.slide-up{animation:wkup .28s ease-out}
-@keyframes wkdown{from{transform:translateY(60px);opacity:.5}to{transform:none;opacity:1}}
-@keyframes wkup{from{transform:translateY(-60px);opacity:.5}to{transform:none;opacity:1}}
-.wk-ghost{display:flex;flex-direction:column;gap:6px;cursor:pointer;opacity:.62}
-.wk-ghost:hover{opacity:.85}
-.wk-ghost *{pointer-events:none}
-.wk-ghost .day{background:repeating-linear-gradient(45deg,var(--hair) 0 1px,transparent 1px 12px);border-style:dashed;min-height:150px}
-.wk-ghost .day.today{border-top:2px dashed var(--line)}
-.wk-ghost .card{filter:saturate(.35) contrast(.85);opacity:.75}
-.wk-ghost .adddy{display:none}
-.wk-ghost-l{margin:0;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--fg)}
+/* week wheel: weeks stacked top to bottom; only the active one is solid, the change fades */
+.wheel{display:flex;flex-direction:column;gap:18px;padding-bottom:40vh}
+.wk{display:flex;flex-direction:column;gap:6px;transition:opacity .35s}
+.wk:not(.cur){opacity:.62;cursor:pointer}
+.wk:not(.cur):hover{opacity:.82}
+.wk:not(.cur) *{pointer-events:none}
+.wk-l{margin:0;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);transition:color .35s}
+.wk.cur .wk-l{color:var(--fg)}
+.wk .day{position:relative}
+.wk .day::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:repeating-linear-gradient(45deg,var(--hair) 0 1px,transparent 1px 12px)}
+.wk:not(.cur) .day::before{opacity:1}
+.wk .day,.wk .card{transition:filter .35s,opacity .35s,background-color .35s,border-color .35s}
+.wk:not(.cur) .day{background-color:transparent;border-style:dashed}
+.wk:not(.cur) .card{filter:saturate(.35) contrast(.85);opacity:.75}
+.wk:not(.cur) .adddy{visibility:hidden}
+.wk:not(.cur) .day.today{border-top:2px dashed var(--line)}
+@media (prefers-reduced-motion:reduce){.wk,.wk *{transition:none!important}}
 /* month view */
 @media (max-width:900px){.mscroll{overflow-x:auto}}
 .mgrid{min-width:820px;display:flex;flex-direction:column;gap:6px}
@@ -536,6 +540,7 @@ function renderMain(){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
   const demo=state.demo?`<div class="banner"><span>Це приклади, щоб було видно, як усе працює. Додайте свої проєкти й приберіть приклади.</span><button class="btn sm" data-act="clear-demo">Видалити приклади</button></div>`:'';
   $('#main').innerHTML=demo+(ui.tab==='plan'?viewPlan():ui.tab==='projects'?viewProjects():viewReport());
+  if(ui.tab==='plan'&&ui.view==='week'&&ui.scrollWeek){ui.scrollWeek=false;requestAnimationFrame(()=>scrollToWeek(ui.wk,false))}
 }
 
 /* Timer controls and the running highlight live only on today's cards; other days just show their own tracked time. */
@@ -682,19 +687,43 @@ function weekDays(mon){
   }
   return {days,wplan};
 }
-/* Week wheel: the previous week sits dimmed above the current one, the next one below. Scrolling over the
-   planner turns the wheel a week at a time; a click on a dimmed week brings it forward. */
-function ghostWeek(n){
-  const mon=addDays(mondayOf(new Date()),(ui.wk+n)*7);
-  return `<div class="wk-ghost ${n<0?'prev':'next'}" data-act="wkgo" data-n="${n}" title="${n<0?'Попередній':'Наступний'} тиждень · ${weekTitle(mon,addDays(mon,6))}">
-    <p class="wk-ghost-l">${n<0?'↑':'↓'} ${weekTitle(mon,addDays(mon,6))} · тиждень ${isoWeek(mon)}</p>
-    <div class="week">${weekDays(mon).days}</div></div>`;
+/* Week wheel: a run of weeks laid out top to bottom and scrolled like a page. The week nearest the middle of the
+   screen is the active one (solid); the rest stay hatched and muted, and the change fades instead of jumping. */
+const WK_BEFORE=4,WK_AFTER=8;
+const weekMon=n=>addDays(mondayOf(new Date()),n*7);
+function weekInfo(n){
+  const mon=weekMon(n),wt=sum(totals(mon.getTime(),addDays(mon,7).getTime()));
+  let wplan=0;for(let i=0;i<7;i++)wplan+=planOf(dk(addDays(mon,i))).reduce((s,x)=>s+(x.h||0),0);
+  return {title:weekTitle(mon,addDays(mon,6)),info:`Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}`};
 }
 function viewWeek(seg){
-  const mon=addDays(mondayOf(new Date()),ui.wk*7),end=addDays(mon,6);
-  const wt=sum(totals(mon.getTime(),addDays(mon,7).getTime())),{days,wplan}=weekDays(mon);
-  return nav(seg,weekTitle(mon,end),`<span class="dtot num">Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}</span>`)+tray()
-    +`<div class="wheel ${ui.slide||''}" id="wheel">${ghostWeek(-1)}<div class="week cur">${days}</div>${ghostWeek(1)}${ghostWeek(2)}</div>`;
+  if(ui.base==null||ui.wk<ui.base-WK_BEFORE||ui.wk>ui.base+WK_AFTER)ui.base=ui.wk;
+  let html='';
+  for(let n=ui.base-WK_BEFORE;n<=ui.base+WK_AFTER;n++){
+    const mon=weekMon(n);
+    html+=`<div class="wk ${n===ui.wk?'cur':''}" data-wk="${n}" data-act="wkgo">
+      <p class="wk-l">${weekTitle(mon,addDays(mon,6))} · тиждень ${isoWeek(mon)}</p>
+      <div class="week">${weekDays(mon).days}</div></div>`;
+  }
+  const w=weekInfo(ui.wk);
+  return nav(seg,`<span id="wkTitle">${w.title}</span>`,`<span class="dtot num" id="wkInfo">${w.info}</span>`)+tray()+`<div class="wheel" id="wheel">${html}</div>`;
+}
+/* Called while scrolling: pick the week closest to the middle of the screen and make it the active one. */
+function syncActiveWeek(){
+  const wheel=document.getElementById('wheel');if(!wheel)return;
+  const mid=innerHeight*0.45;let best=null,dist=1e9;
+  for(const el of wheel.children){const r=el.getBoundingClientRect(),d=Math.abs(r.top+Math.min(r.height,360)/2-mid);if(d<dist){dist=d;best=el}}
+  if(!best)return;
+  const n=Number(best.dataset.wk);if(n===ui.wk)return;
+  ui.wk=n;ui.menu=null;
+  for(const el of wheel.children)el.classList.toggle('cur',el===best);
+  const w=weekInfo(n);$('#wkTitle').textContent=w.title;$('#wkInfo').innerHTML=w.info;
+}
+function scrollToWeek(n,smooth){
+  const el=document.querySelector(`.wk[data-wk="${n}"]`);if(!el)return false;
+  const toph=(document.querySelector('.top')?.offsetHeight||0)+(document.querySelector('.phead')?.offsetHeight||0)+16;
+  scrollTo({top:el.getBoundingClientRect().top+scrollY-toph,behavior:smooth?'smooth':'auto'});
+  return true;
 }
 function viewMonth(seg){
   const n=new Date(),first=new Date(n.getFullYear(),n.getMonth()+ui.mo,1),last=new Date(first.getFullYear(),first.getMonth()+1,0);
@@ -863,9 +892,9 @@ function onClick(e){
   if(ui.menu&&!e.target.closest('.addf')&&!(t&&['menu','edit-h'].includes(t.dataset.act))){ui.menu=null;renderMain()}
   // A click on a card's body (not on its buttons) unfolds it; a click on the unfolded panel stays inside.
   const cd=e.target.closest('.card');
-  if(!t&&cd&&!e.target.closest('.cexp')){const key=cd.dataset.from+'|'+cd.dataset.drag;ui.exp=ui.exp===key?null:key;renderMain();return}
+  if((!t||t.dataset.act==='wkgo')&&cd&&!e.target.closest('.cexp')){const key=cd.dataset.from+'|'+cd.dataset.drag;ui.exp=ui.exp===key?null:key;renderMain();return}
   if(!t)return;
-  if(t.dataset.tab){ui.tab=t.dataset.tab;ui.menu=null;ui.rec=null;saveUi();renderMain();return}
+  if(t.dataset.tab){ui.scrollWeek=true;ui.tab=t.dataset.tab;ui.menu=null;ui.rec=null;saveUi();renderMain();return}
   const a=t.dataset.act,d=t.dataset;
   if(a==='start-sel')startTimer(ui.tp);
   else if(a==='pause')pauseTimer();
@@ -876,12 +905,16 @@ function onClick(e){
   else if(a==='bar')HOST?.toggleBar();
   else if(a==='theme'){ui.theme=d.v==='dark'?'dark':'light';saveUi();applyTheme()}
   else if(a==='open-data')HOST?.openDataFolder();
-  else if(a==='view'){ui.view=d.v;ui.menu=null;saveUi();renderMain()}
-  else if(a==='nav'){const k=ui.view==='month'?'mo':'wk';ui[k]=d.n==='0'?0:ui[k]+Number(d.n);ui.menu=null;renderMain()}
+  else if(a==='view'){ui.scrollWeek=true;ui.view=d.v;ui.menu=null;saveUi();renderMain()}
+  else if(a==='nav'&&ui.view!=='month'){
+    const target=d.n==='0'?0:ui.wk+Number(d.n);ui.menu=null;ui.exp=null;
+    if(!scrollToWeek(target,true)){ui.wk=target;ui.base=target;renderMain();scrollToWeek(target,false)}
+  }
+  else if(a==='nav'){ui.mo=d.n==='0'?0:ui.mo+Number(d.n);ui.menu=null;renderMain()}
   else if(a==='menu'){ui.menu={k:d.d,edit:null};ui.mq='';ui.msel=null;ui.mh=2;renderMain();$('#aq')?.focus()}
   else if(a==='edit-h'){const it=planOf(d.d).find(x=>x.p===d.p);ui.menu={k:d.d,edit:d.p};ui.mh=it?it.h||0:0;renderMain()}
   else if(a==='mclose'){ui.menu=null;renderMain()}
-  else if(a==='wkgo'){ui.slide=Number(d.n)>0?'slide-down':'slide-up';ui.wk+=Number(d.n);ui.menu=null;ui.exp=null;renderMain();ui.slide=''}
+  else if(a==='wkgo'){if(Number(t.dataset.wk)!==ui.wk)scrollToWeek(Number(t.dataset.wk),true)}
   else if(a==='cexp'){const key=d.d+'|'+d.p;ui.exp=ui.exp===key?null:key;renderMain()}
   else if(a==='cx-spent'){const h=Math.max(0,Number($('#cxh').value)||0),mi=Math.max(0,Number($('#cxm').value)||0);setSpent(d.p,d.d,(h*60+mi)*6e4);save();renderMain()}
   else if(a==='cx-goal'){const it=planItem(d.d,d.p);if(it){it.h=Number(d.h);delete state.notified[d.d+':'+d.p];save();renderMain()}}
@@ -958,16 +991,9 @@ function onKey(e){
   const p=active().find(x=>x.key===c);
   if(p){e.preventDefault();ppProject(p.id)}
 }
-/* Mouse wheel over the week planner turns the week wheel one week per notch (buttons still work). */
-let wheelAcc=0,wheelLock=0;
-document.addEventListener('wheel',e=>{
-  if(ui.tab!=='plan'||ui.view!=='week'||!e.target.closest('#wheel')||e.target.closest('.cexp,.addf,textarea'))return;
-  e.preventDefault();
-  if(Date.now()<wheelLock)return;
-  wheelAcc+=e.deltaY;
-  if(Math.abs(wheelAcc)<60)return;
-  ui.slide=wheelAcc>0?'slide-down':'slide-up';ui.wk+=wheelAcc>0?1:-1;wheelAcc=0;wheelLock=Date.now()+320;ui.menu=null;ui.exp=null;renderMain();ui.slide='';
-},{passive:false});
+/* Scrolling the page moves through the weeks; the one in the middle of the screen becomes active. */
+let wkRaf=0;
+addEventListener('scroll',()=>{if(ui.tab!=='plan'||ui.view!=='week'||wkRaf)return;wkRaf=requestAnimationFrame(()=>{wkRaf=0;syncActiveWeek()})},{passive:true});
 document.addEventListener('click',onClick);
 document.addEventListener('change',onChange);
 document.addEventListener('keydown',onKey);
@@ -1039,7 +1065,7 @@ if(HOST){
   HOST.onHotkeyFailed(list=>{if(list.length)toast(`Ці клавіші вже зайняті іншою програмою: ${list.join(', ')}. Призначте інші на вкладці «Проєкти й клавіші».`)});
 }
 if(state.lastP&&proj(state.lastP))ui.tp=state.lastP;
-applyTheme();render();tickClock();
+applyTheme();ui.scrollWeek=true;render();tickClock();
 if(HOST){HOST.save(state);window.addEventListener('beforeunload',()=>HOST.save(state))}
 setInterval(tickClock,1000);
 setInterval(()=>{const a=document.activeElement;if(state.timer&&state.timer.s&&!ui.menu&&!ui.rec&&!(a&&/INPUT|SELECT/.test(a.tagName)))renderMain()},30000);
