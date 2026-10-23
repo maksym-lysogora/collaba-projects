@@ -300,6 +300,52 @@ form label input,form label select{font-family:var(--font);text-transform:none;l
 @media (max-width:760px){.timer{flex-wrap:wrap}}
 @media (max-width:520px){.clock{font-size:20px}.timer select{flex-basis:100%}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- Poster refinement (2026-10-23): lighter cream paper, muted "complex" inks, round Bauhaus forms.
+   References: Bauhaus exhibition posters, risograph architecture prints. Overrides the tokens above. ---- */
+:root{
+  --bg:#E7DECB; --surface:#EEE7D7; --raised:#F5F0E4; --line:#2B2E33; --hair:#CDBE9E;
+  --fg:#2B2E33; --muted:#5F594D; --accent:#34507A; --accent-fg:#F4EEE2; --now:#CF4A2E; --today:#DF8F2E;
+  --sun:#E39A3B; --danger:#B4402A; --ok:#5E7F7A; --paper:#F4EEE2; --grain:.12;
+  --dotc:rgba(43,46,51,.22); --mm1:rgba(181,83,47,.08); --mm2:rgba(181,83,47,.20);
+}
+:root[data-theme="dark"]{
+  --bg:#23262A; --surface:#2A2E33; --raised:#32363C; --line:#A69F8F; --hair:#3F444B;
+  --fg:#E9E1D0; --muted:#A39C8C; --accent:#8FA6CC; --accent-fg:#15202F; --now:#E2644A; --today:#E3A04C;
+  --sun:#C9822F; --grain:.05; --dotc:rgba(233,225,208,.15); --mm1:rgba(233,225,208,.04); --mm2:rgba(233,225,208,.10);
+}
+#sun{position:fixed;width:min(46vw,560px);aspect-ratio:1;max-width:100%;right:-12vw;top:22vh;border-radius:50%;background:var(--sun);opacity:.13;z-index:-1;pointer-events:none}
+:root[data-theme="dark"] #sun{opacity:.07}
+.brand h1 img{border-radius:8px}
+.brand{border-bottom-width:1.5px}
+.timer{border-radius:999px;padding:7px 10px 7px 18px;border-width:1.5px}
+.tdot,.dot{border-radius:50%}
+.btn,.seg,.kbd,.hchip,.chip,.adddy,input[type=text],input[type=date],input[type=time],input[type=number],select{border-radius:999px}
+.seg{overflow:hidden;border-width:1.5px}
+.btn{border-width:1.5px}
+.tabs button[aria-selected=true]{border-bottom-color:var(--sun)}
+.sw,.cpick{border-radius:50%}
+.card{border-radius:14px}
+.card.plan{box-shadow:inset 0 0 0 1.5px var(--c);padding-left:30px}
+.card.plan::after{content:"";position:absolute;left:11px;top:15px;width:10px;height:10px;border-radius:50%;background:var(--c)}
+.card.run{box-shadow:0 0 0 3px var(--now)}
+.pp{border-radius:50%}
+.x{border-radius:50%}
+.cexp,.addf,.panel,.alert,.banner{border-radius:16px}
+.toast{border-radius:999px}
+.day,.mcell{border-radius:16px;border-top-width:1px;border-top-color:var(--hair)}
+.day.today,.mcell.today{border-top:1px solid var(--hair);box-shadow:inset 0 4px 0 var(--sun)}
+.dh .dn{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);font-size:19px;margin-left:8px}
+.mcell .dh .dn{width:28px;height:28px;font-size:14px}
+.today .dn{background:var(--sun);border-color:var(--sun);color:#2B2E33;text-shadow:none}
+.prow{border-radius:14px;border-left-width:1px;border-left-color:var(--hair)}
+.prow::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--c);flex:none;order:-1}
+.track,.fill,.col .stack{border-radius:999px}
+.col .stack{border-radius:8px 8px 3px 3px}
+.phead{position:sticky;top:var(--toph,0px);z-index:4;background:var(--bg);padding-block:8px;margin-bottom:6px;border-bottom:1px solid var(--hair)}
+.dh{flex-wrap:wrap;row-gap:2px}
+.dtot{white-space:nowrap}
+.card .tm{white-space:nowrap}
 </style>
 
 <div class="top">
@@ -314,14 +360,15 @@ form label input,form label select{font-family:var(--font);text-transform:none;l
 <main id="main"></main>
 <div class="toast" id="toast" hidden></div>
 <div id="grain" aria-hidden="true"></div>
+<div id="sun" aria-hidden="true"></div>
 <div class="alert" id="alert" role="alert" hidden></div>
 
 <script>
 const LS='tydzen-v1';
 // Printer's inks for projects: ultramarine, petrol, terracotta, olive, plum, umber, steel, malachite.
-const COLORS=['#2A3AAB','#2E6476','#9A4630','#5A6629','#6E3B5C','#7A5230','#4E5B69','#1F6E67'];
+const COLORS=['#34507A','#5E7F7A','#B5532F','#717A3E','#87596C','#8C6A3F','#4E5866','#2F6B66'];
 // Earlier palettes, mapped onto the inks by position so existing projects keep their slot.
-const OLD_PALETTES=[['#4f6bed','#14a38b','#e8833a','#d6457a','#8b5cf6','#3aa655','#d4a017','#5b6b7f'],
+const OLD_PALETTES=[['#2a3aab','#2e6476','#9a4630','#5a6629','#6e3b5c','#7a5230','#4e5b69','#1f6e67'],['#4f6bed','#14a38b','#e8833a','#d6457a','#8b5cf6','#3aa655','#d4a017','#5b6b7f'],
   ['#7d93b8','#6fa39a','#c08f6a','#b87c8e','#9a8cc0','#8aa36f','#c4a95e','#8b949e']];
 const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
 const MON=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
@@ -547,6 +594,7 @@ function renderMain(){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
   const demo=state.demo?`<div class="banner"><span>Це приклади, щоб було видно, як усе працює. Додайте свої проєкти й приберіть приклади.</span><button class="btn sm" data-act="clear-demo">Видалити приклади</button></div>`:'';
   $('#main').innerHTML=demo+(ui.tab==='plan'?viewPlan():ui.tab==='projects'?viewProjects():viewReport());
+  document.documentElement.style.setProperty('--toph',(document.querySelector('.top')?.offsetHeight||0)+'px');
   if(ui.tab==='plan'&&ui.view==='week'&&ui.scrollWeek){ui.scrollWeek=false;requestAnimationFrame(()=>scrollToWeek(ui.wk,false))}
 }
 
