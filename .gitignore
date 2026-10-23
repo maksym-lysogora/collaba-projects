@@ -1,3 +1,6 @@
 # Built program and installed packages: rebuilt from source with `npm install` and `npm run build` in desktop/
 desktop/node_modules/
 dist/
+
+# Tracker data (data.json, daily backups, logs): personal and changes every minute
+data/

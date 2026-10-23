@@ -11,7 +11,7 @@ const runtime = path.join(__dirname, 'node_modules', 'electron', 'dist');
 const out = path.join(root, 'dist', 'CollabaProjects-win32-x64');
 const exe = path.join(out, 'CollabaProjects.exe');
 const appDir = path.join(out, 'resources', 'app');
-const FILES = ['main.js', 'preload.js', 'bar.html'];
+const FILES = ['main.js', 'preload.js', 'datadir.js', 'bar.html'];
 const ASSETS = ['icon.ico', 'tray.png', 'tray@2x.png'];
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 

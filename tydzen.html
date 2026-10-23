@@ -369,7 +369,7 @@ let dbDoc=null,lastU=0,writing=false,pending=false,wt;
 function setSync(on){const s=document.getElementById('sync');s.className='sync'+(on?' on':'');s.textContent=HOST?'Дані на диску':on?'Синхронізовано':'Тільки в цьому браузері'}
 function save(){
   state.u=Date.now();lastU=state.u;
-  if(HOST){try{localStorage.setItem(LS+'-host',JSON.stringify(state))}catch{}HOST.save(state);return}
+  if(HOST){try{localStorage.setItem(LS+'-host',JSON.stringify(state))}catch{}if(HOST.save(state)===false)toast('Не вдалося записати дані на диск. Копія збережена всередині програми; деталі — у app.log у папці з даними.');return}
   try{localStorage.setItem(LS,JSON.stringify(state))}catch{}
   if(dbDoc){clearTimeout(wt);wt=setTimeout(flush,400)}
 }
@@ -963,7 +963,7 @@ if(HOST){
 }
 if(state.lastP&&proj(state.lastP))ui.tp=state.lastP;
 applyTheme();render();tickClock();
-if(HOST)HOST.save(state);
+if(HOST){HOST.save(state);window.addEventListener('beforeunload',()=>HOST.save(state))}
 setInterval(tickClock,1000);
 setInterval(()=>{const a=document.activeElement;if(state.timer&&state.timer.s&&!ui.menu&&!ui.rec&&!(a&&/INPUT|SELECT/.test(a.tagName)))renderMain()},30000);
 </script>

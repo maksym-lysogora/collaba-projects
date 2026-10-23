@@ -5,9 +5,9 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, globalShortcut, nativeImage, sc
 const path = require('path');
 const fs = require('fs');
 
-// Data lives outside the program folder, so replacing or updating the program never touches it.
-const DATA_DIR = path.join(app.getPath('appData'), 'CollabaProjects');
-const OLD_DATA_DIR = path.join(app.getPath('appData'), 'MiyTyzhden'); // the app's name before 1.1.0
+// Data lives in <project>/data (see datadir.js), outside the program folder, so rebuilding never touches it.
+const { DATA_DIR, LEGACY_DIR } = require('./datadir');
+const OLD_DATA_DIR = LEGACY_DIR; // where data lived before 1.2.1
 const DATA_FILE = path.join(DATA_DIR, 'data.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
@@ -31,8 +31,8 @@ function readJson(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
 }
 function loadData() {
-  // First start after the rename: copy (never move) the old data folder, so the old one stays as a safety copy.
-  if (!fs.existsSync(DATA_FILE) && fs.existsSync(path.join(OLD_DATA_DIR, 'data.json'))) fs.cpSync(OLD_DATA_DIR, DATA_DIR, { recursive: true });
+  // First start with a new data folder: copy (never move) the old one, so it stays as a safety copy.
+  if (DATA_DIR !== OLD_DATA_DIR && !fs.existsSync(DATA_FILE) && fs.existsSync(path.join(OLD_DATA_DIR, 'data.json'))) fs.cpSync(OLD_DATA_DIR, DATA_DIR, { recursive: true });
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
   let d = readJson(DATA_FILE);
   if (!d && fs.existsSync(DATA_FILE)) {
@@ -164,7 +164,8 @@ function createMain(show) {
   mainWin = new BrowserWindow({
     width: Math.round(wa.width * 0.9), height: Math.round(wa.height * 0.9), show: false,
     title: APP_NAME, icon: ICON, backgroundColor: '#17181b', autoHideMenuBar: true,
-    webPreferences: { preload: PRELOAD, backgroundThrottling: false, contextIsolation: true },
+    // sandbox:false lets the preload write data.json itself (see preload.js).
+    webPreferences: { preload: PRELOAD, backgroundThrottling: false, contextIsolation: true, sandbox: false },
   });
   Menu.setApplicationMenu(null);
   mainWin.loadFile(UI_FILE);
@@ -190,7 +191,8 @@ function createBar() {
   bar = new BrowserWindow({
     ...g, frame: false, resizable: false, movable: true, skipTaskbar: true, alwaysOnTop: true, transparent: true,
     hasShadow: false, show: false, maximizable: false, minimizable: false, fullscreenable: false,
-    webPreferences: { preload: PRELOAD, backgroundThrottling: false, contextIsolation: true },
+    // sandbox:false lets the preload write data.json itself (see preload.js).
+    webPreferences: { preload: PRELOAD, backgroundThrottling: false, contextIsolation: true, sandbox: false },
   });
   bar.setAlwaysOnTop(true, 'screen-saver');
   bar.loadFile(path.join(__dirname, 'bar.html'));
@@ -244,6 +246,7 @@ ipcMain.on('bar-menu', () => {
 app.whenReady().then(() => {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   current = loadData();
+  logError('start', `${process.execPath}; ${current && current.projects ? current.projects.length : 0} projects in data.json`);
   settings = readJson(SETTINGS_FILE) || {};
   createMain(!process.argv.includes('--hidden'));
   createBar();
@@ -252,6 +255,11 @@ app.whenReady().then(() => {
   updateTray();
   screen.on('display-metrics-changed', () => { if (bar && !bar.isDestroyed()) bar.setBounds(barGeometry()); });
 });
-app.on('before-quit', () => { quitting = true; if (writeTimer) writeData(); });
+app.on('before-quit', () => { quitting = true; if (writeTimer) writeData(); logError('quit', 'app closed normally'); });
+// A crashed planner window would silently stop saving: reload it from the file on disk.
+app.on('render-process-gone', (e, wc, details) => {
+  logError('renderer-gone', details.reason);
+  if (mainWin && !mainWin.isDestroyed() && wc === mainWin.webContents && !quitting) mainWin.loadFile(UI_FILE);
+});
 app.on('will-quit', () => globalShortcut.unregisterAll());
 app.on('window-all-closed', () => {});
