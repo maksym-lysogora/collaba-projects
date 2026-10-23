@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Collaba Projects — смужка</title>
+<style>
+/* The taskbar strip: one row, sized by the window (taskbar height). Same palette as the planner. */
+:root{--bg:#24272B;--raised:#33373D;--line:#A39C8C;--fg:#E8DCC4;--muted:#A39C8C;--accent:#E0A030;--danger:#E5533D;--c:#A39C8C;
+  --font:'Jost','Segoe UI Variable','Segoe UI',system-ui,sans-serif;--mono:'IBM Plex Mono','Cascadia Mono',Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;font-family:var(--font);color:var(--fg);user-select:none}
+.strip{height:100%;display:flex;align-items:center;gap:4px;padding:0 6px 0 0;border-radius:0;
+  background:var(--bg);border:1px solid var(--line);border-left:8px solid var(--c)}
+.strip.run{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger);border-left-color:var(--c)}
+.strip.pause{border-style:dashed;border-color:var(--c)}
+.strip.alert{animation:flash 1s ease-in-out infinite}
+@keyframes flash{50%{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}}
+.grip{-webkit-app-region:drag;width:12px;align-self:stretch;cursor:grab;display:grid;place-items:center;color:var(--muted);font-size:10px;letter-spacing:-2px;opacity:.6}
+button{-webkit-app-region:no-drag;font:inherit;color:inherit;border:0;background:none;cursor:pointer;border-radius:6px;padding:0}
+.name{flex:1;min-width:0;display:flex;align-items:center;gap:7px;height:calc(100% - 8px);padding:0 8px;text-align:left}
+.name:hover,.ic:hover{background:var(--raised)}
+button{border-radius:0!important}
+.dot{width:9px;height:9px;border-radius:0;background:var(--c);flex:none}
+.run .dot{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 30%,transparent)}}
+.label{min-width:0;display:flex;flex-direction:column;line-height:1.15}
+.label b{font-weight:500;font-size:13px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.label small{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.alert .label small{color:var(--accent)}
+.caret{color:var(--muted);font-size:10px;flex:none}
+.clock{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;padding:0 4px;color:var(--muted)}
+.run .clock{color:var(--fg)}
+.ic{width:30px;height:calc(100% - 8px);max-height:32px;display:grid;place-items:center;flex:none}
+.ic svg{width:13px;height:13px}
+.ic.stop{color:var(--danger)}
+.ic:disabled{opacity:.35;cursor:default;background:none}
+</style>
+</head>
+<body>
+<div class="strip" id="strip">
+  <div class="grip" title="Перетягніть, щоб посунути">⋮⋮</div>
+  <button class="name" id="name" title="Змінити проєкт"><span class="dot"></span><span class="label"><b id="pname">Collaba Projects</b><small id="pstate">таймер зупинено</small></span><span class="caret">▾</span></button>
+  <span class="clock" id="clock">0:00:00</span>
+  <button class="ic" id="pp" title="Старт"></button>
+  <button class="ic stop" id="stop" title="Зупинити"><svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
+  <button class="ic" id="open" title="Відкрити планер"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 6h13M5.5 2.5v11" stroke="currentColor" stroke-width="1.3"/></svg></button>
+</div>
+<script>
+const PLAY='<svg viewBox="0 0 16 16"><path d="M4.5 2.5v11l9-5.5z" fill="currentColor"/></svg>';
+const PAUSE='<svg viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/><rect x="9.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/></svg>';
+let st=null,alertOn=null;
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const clock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${Math.floor(s/3600)}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`};
+const proj=id=>st&&(st.projects||[]).find(p=>p.id===id);
+const elapsed=t=>t?(t.acc||0)+(t.s?Date.now()-t.s:0):0;
+
+function render(){
+  const t=st&&st.timer,p=proj(t?t.p:st&&st.lastP),mode=!t?'idle':t.s?'run':'pause';
+  const s=$('strip');
+  s.className='strip '+mode+(alertOn&&t&&alertOn.p===t.p?' alert':'');
+  s.style.setProperty('--c',p?p.color:'#8f8c86');
+  $('pname').textContent=p?p.name:'Оберіть проєкт';
+  $('pstate').textContent=s.classList.contains('alert')?'план на сьогодні виконано':mode==='run'?'йде':mode==='pause'?'пауза':'таймер зупинено';
+  $('pp').innerHTML=mode==='run'?PAUSE:PLAY;
+  $('pp').title=mode==='run'?'Пауза':mode==='pause'?'Продовжити':'Старт';
+  $('stop').disabled=!t;
+  tick();
+}
+function tick(){$('clock').textContent=clock(elapsed(st&&st.timer))}
+
+$('name').onclick=()=>barHost.menu();
+$('open').onclick=()=>barHost.openPlanner();
+$('stop').onclick=()=>barHost.cmd({act:'stop'});
+$('pp').onclick=()=>{
+  const t=st&&st.timer;
+  if(t)barHost.cmd({act:'pauseToggle'});
+  else if(st&&proj(st.lastP))barHost.cmd({act:'start',p:st.lastP});
+  else barHost.menu();
+};
+barHost.onState(s=>{st=s;if(alertOn&&(!s||!s.timer||s.timer.p!==alertOn.p))alertOn=null;render()});
+barHost.onAlert(a=>{alertOn=a;render()});
+barHost.ready();
+setInterval(tick,1000);
+render();
+</script>
+</body>
+</html>

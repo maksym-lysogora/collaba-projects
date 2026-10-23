@@ -1,0 +1,969 @@
+<title>Collaba Projects</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Jost:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* "Креслення": a drafting desk on kraft paper. Graphite ink lines, flat printer's inks for projects, cadmium only for
+   what is running now, ochre for today. Second theme: graphite board. Paper grain sits over everything (#grain).
+   Layout: sticky timer strip on top, tabs, then week columns or a month grid on a 32 px drafting grid. */
+:root{
+  --bg:#E8DCC4; --grid:rgba(36,39,43,.075); --surface:#EFE5D0; --raised:#F6F0E3; --line:#24272B; --hair:#C4B391;
+  --fg:#24272B; --muted:#5E5A50; --accent:#2A3AAB; --accent-fg:#F3EAD7; --now:#D23F2A; --today:#C98A1E;
+  --danger:#B8321F; --ok:#1F6E67; --paper:#F3EAD7; --grain:.08; --brand:#2A3AAB;
+  --display:'Oswald','Arial Narrow',Arial,sans-serif;
+  --font:'Jost','Segoe UI',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --gut:max(clamp(16px,2vw,36px),env(safe-area-inset-left,0px));
+  --gutr:max(clamp(16px,2vw,36px),env(safe-area-inset-right,0px));
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#24272B; --grid:rgba(232,220,196,.045); --surface:#2B2F34; --raised:#33373D; --line:#A39C8C; --hair:#41464E;
+  --fg:#E8DCC4; --muted:#A39C8C; --accent:#8A96F2; --accent-fg:#141836; --now:#E5533D; --today:#E0A030;
+  --danger:#F0806C; --ok:#6FB8AE; --grain:.05;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;margin:0;
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;
+  padding-block:0 48px;padding-left:var(--gut);padding-right:var(--gutr)}
+#grain{position:fixed;inset:0;pointer-events:none;z-index:30;opacity:var(--grain);mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .17 0 0 0 0 .12 0 0 0 1.1 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] #grain{mix-blend-mode:screen}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:14px;height:14px;display:block}
+
+/* top strip */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;padding-top:12px;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:10px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+.brand h1{display:flex;align-items:center;gap:12px;font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.brand h1 img{width:32px;height:32px;border-radius:0;flex:none}
+.brand h1 span{color:var(--muted);font-weight:500}
+.brand .sp{flex:1}
+.sync{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.sync::before{content:"";display:inline-block;width:7px;height:7px;background:var(--muted);margin-right:7px}
+.sync.on::before{background:var(--ok)}
+.tlabel{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-left:10px}
+.timer{--c:var(--muted);display:flex;flex-wrap:nowrap;align-items:center;width:fit-content;max-width:100%;gap:8px;
+  background:var(--raised);border:2px solid var(--line);border-radius:0;padding:10px 14px;gap:12px}
+.timer.run{border-color:var(--now);box-shadow:inset 0 0 0 1px var(--now)}
+.timer.pause{border-style:dashed}
+.tdot{width:14px;height:14px;background:var(--c);flex:none}
+.run .tdot{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.timer select{flex:0 0 280px;min-width:0}
+.timer .note{flex:0 0 300px;min-width:0}
+.timer .btn{white-space:nowrap;flex:none}
+.timer .clock{flex:none;min-width:8.5ch;padding:0 6px}
+.tstate{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.run .tstate{color:var(--now)}
+.clock{font-family:var(--mono);font-weight:500;font-size:22px;min-width:7.2ch;text-align:center}
+.idle .clock{color:var(--muted)}
+input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{background:var(--raised);border:1px solid var(--hair);border-bottom:2px solid var(--line);border-radius:0;padding:7px 10px;min-height:36px}
+.btn{display:inline-flex;align-items:center;gap:7px;border:2px solid var(--line);background:var(--raised);border-radius:0;padding:6px 14px;min-height:36px;font-weight:500;letter-spacing:.02em}
+.btn:hover:not(:disabled){background:var(--surface)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+.btn.primary:hover:not(:disabled){filter:brightness(1.1);background:var(--accent)}
+.btn.stop{color:var(--now);border-color:var(--now)}
+.btn.sm{padding:3px 10px;min-height:30px;font-size:13px;border-width:1px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--fg);border-color:var(--hair);background:transparent}
+.btn.danger{color:var(--danger)}
+.kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:0;padding:1px 6px;color:var(--fg);background:var(--raised);white-space:nowrap}
+button.kbd{min-height:30px;padding:3px 10px;font-size:12px}
+button.kbd.rec{border-color:var(--now);color:var(--now)}
+
+.tabs{display:flex;gap:2px;margin:14px 0;border-bottom:2px solid var(--line)}
+.tabs button{border:0;background:none;padding:8px 14px 6px;color:var(--muted);font-family:var(--display);font-size:15px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;border-bottom:4px solid transparent;margin-bottom:-2px}
+.tabs button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--accent)}
+
+/* planner header */
+.phead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.phead h2{font-family:var(--display);font-size:26px;margin:0 6px 0 0;font-weight:600;letter-spacing:.04em;text-transform:uppercase;min-width:12ch}
+.sp{flex:1}
+.seg{display:inline-flex;border:2px solid var(--line);background:var(--raised)}
+.seg button{border:0;background:none;padding:4px 12px;font-weight:500;color:var(--muted);font-size:14px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--line);color:var(--bg)}
+.tray{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px;font-size:13px;color:var(--muted)}
+.chip{--c:var(--muted);display:inline-flex;align-items:center;gap:8px;background:var(--c);border:0;padding:4px 12px 4px 10px;color:var(--paper);font-size:13px;font-weight:500}
+.chip .dot{background:var(--paper)}
+.chip[draggable=true]{cursor:grab}
+.chip .kbd{padding:0 5px;font-size:10px;background:transparent;color:var(--paper);border-color:color-mix(in srgb,var(--paper) 60%,transparent)}
+.dot{width:9px;height:9px;flex:none;background:var(--c,var(--muted))}
+
+/* project card: a flat plane of printer's ink. Planned and untouched = 45° hatching, running = cadmium frame. */
+.card{--c:var(--muted);position:relative;display:flex;flex-direction:column;gap:6px;min-width:0;cursor:grab;
+  background:var(--c);color:var(--paper);border:0;border-radius:0;padding:10px 30px 8px 12px}
+.card:hover{filter:brightness(1.07)}
+.card.plan{background:var(--raised);box-shadow:inset 0 0 0 2px var(--c),inset 8px 0 0 var(--c);color:var(--fg);padding-left:20px}
+
+.card.plan .tm{color:var(--muted)}
+.card .nm{font-weight:500;overflow-wrap:anywhere;line-height:1.3}
+.card .cf{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:30px}
+.card .tm{border:0;background:none;padding:2px 5px;margin-left:-5px;font-family:var(--mono);font-size:12px;color:inherit;opacity:.88;cursor:pointer}
+.card .tm:hover{opacity:1;text-decoration:underline}
+.card .tm.over{opacity:1;font-weight:600}
+.card .tm.add{opacity:.7}
+.prog{height:9px;position:relative;border-left:1px solid currentColor;border-right:1px solid currentColor;opacity:.85}
+.prog::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:currentColor;opacity:.45}
+.prog i{position:absolute;left:0;top:3px;height:3px;display:block;background:currentColor}
+.prog.over i{background:var(--paper);box-shadow:0 0 0 1px var(--now)}
+.card.run{box-shadow:0 0 0 3px var(--now)}
+.card.paused{outline:2px dashed var(--now);outline-offset:1px}
+.x{position:absolute;top:4px;right:4px;width:20px;height:20px;border:0;background:none;color:inherit;opacity:.55;padding:0;display:grid;place-items:center;font-size:13px;line-height:1}
+.x:hover{opacity:1;background:var(--now);color:var(--paper)}
+.pp{width:28px;height:28px;border:1px solid currentColor;border-radius:0;padding:0;display:grid;place-items:center;flex:none;background:transparent;color:inherit}
+.pp:hover,.card.run .pp{background:var(--paper);color:var(--c);border-color:var(--paper)}
+.card.compact{padding:6px 24px 6px 8px;gap:2px;font-size:13px}
+.card.compact .cf{min-height:24px}
+.card.compact .pp{width:22px;height:22px}
+.card.compact .pp svg.i{width:10px;height:10px}
+.card.compact .x{top:2px;right:2px;width:18px;height:18px;font-size:12px}
+.card.compact .tm{font-size:11px}
+.card .tk{margin-left:6px;border:1px solid currentColor;padding:0 5px;font-family:var(--mono);font-size:10.5px;background:transparent;color:inherit;vertical-align:1px}
+
+.addf{display:flex;flex-direction:column;gap:8px;background:var(--raised);border:2px solid var(--line);padding:12px;box-shadow:6px 6px 0 var(--hair);z-index:4;font-size:13.5px;color:var(--fg)}
+.addf input,.addf select{min-height:32px;padding:5px 9px}
+.aft{display:flex;gap:8px;align-items:center;font-weight:500}
+.afl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.mlist{display:flex;flex-direction:column;gap:1px;max-height:190px;overflow-y:auto}
+.mlist button{display:flex;align-items:center;gap:8px;border:1px solid transparent;background:none;text-align:left;padding:5px 8px}
+.mlist button:hover{background:var(--surface)}
+.mlist button[aria-pressed=true]{background:var(--surface);border-color:var(--line)}
+.mlist .mnew{color:var(--accent);font-weight:500}
+.hrow{display:flex;flex-wrap:wrap;gap:4px}
+.hchip{border:1px solid var(--line);background:var(--raised);padding:2px 9px;font-family:var(--mono);font-size:12px}
+.hchip[aria-pressed=true]{background:var(--line);color:var(--bg)}
+.mcell{position:relative}
+.mcell .addf{position:absolute;top:32px;left:0;width:300px}
+.mcell .addf.rt{left:auto;right:0}
+button.chip{cursor:pointer}
+.alert{--c:var(--accent);position:fixed;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:min(400px,calc(100vw - 32px));
+  background:var(--raised);border:2px solid var(--line);border-top:10px solid var(--c);padding:14px;z-index:21;box-shadow:8px 8px 0 var(--hair);display:flex;flex-direction:column;gap:10px}
+.alert .row{gap:6px}
+.pgoal{font-family:var(--mono);font-size:11px;color:var(--now);text-transform:uppercase;letter-spacing:.08em}
+
+/* week view: day columns drawn like axes on a sheet */
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px}
+.day{background:color-mix(in srgb,var(--surface) 70%,transparent);border:1px solid var(--hair);border-top:2px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:240px;min-width:0}
+.day.today{border-top:6px solid var(--today);background:var(--surface)}
+.day.over,.mcell.over{background:var(--raised);outline:2px dashed var(--accent);outline-offset:-2px}
+.day.off{background:repeating-linear-gradient(45deg,var(--hair) 0 1px,transparent 1px 12px);border-style:dashed}
+.dh{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.dh b{font-family:var(--display);font-size:14px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:500}
+.dh .dn{font-family:var(--display);font-size:24px;font-weight:600;margin-left:6px;color:var(--fg)}
+.today .dh b{color:var(--fg)}
+.today .dn{text-shadow:2px 2px 0 color-mix(in srgb,var(--now) 70%,transparent)}
+.dtot{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.cards{display:flex;flex-direction:column;gap:6px;flex:1}
+.adddy{border:1px dashed var(--line);background:none;padding:6px;color:var(--muted);font-size:13px}
+.adddy:hover{border-style:solid;color:var(--fg);background:var(--raised)}
+.empty{color:var(--muted);font-size:13px;padding:6px 2px}
+
+/* month view */
+@media (max-width:900px){.mscroll{overflow-x:auto}}
+.mgrid{min-width:820px;display:flex;flex-direction:column;gap:6px}
+.mrow{display:grid;grid-template-columns:62px repeat(7,minmax(0,1fr));gap:6px}
+.mhead div{font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:0 8px}
+.wkl{display:flex;flex-direction:column;justify-content:flex-start;padding:8px 4px;font-family:var(--mono);font-size:11px;color:var(--muted);gap:2px;border-right:2px solid var(--line)}
+.wkl b{color:var(--fg);font-weight:500;font-size:12px}
+.mcell{background:color-mix(in srgb,var(--surface) 70%,transparent);border:1px solid var(--hair);border-top:2px solid var(--line);padding:6px;min-height:118px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.mcell .dh .dn{font-size:17px;margin:0}
+.mcell.out{background:repeating-linear-gradient(45deg,var(--hair) 0 1px,transparent 1px 12px);border-style:dashed}
+.mcell.out .dn{color:var(--muted)}
+.mcell.today{border-top:6px solid var(--today);background:var(--surface)}
+.mcell .cards{gap:3px}
+.mcell .plus{border:0;background:none;color:var(--muted);width:22px;height:22px;padding:0;opacity:.7}
+.mcell .plus:hover{opacity:1;color:var(--fg);background:var(--raised)}
+.mrow.idle .mcell,.mrow.idle .wkl{opacity:.4;filter:grayscale(1)}
+.mrow.idle:hover .mcell,.mrow.idle:hover .wkl{opacity:.85;filter:none}
+.msum{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px;font-size:13px;color:var(--muted)}
+.msum .chip .num{color:color-mix(in srgb,var(--paper) 80%,transparent)!important}
+
+/* panels: sheets of tracing paper over the desk */
+.panel{background:var(--raised);border:2px solid var(--line);padding:16px}
+.panel h3{margin:0 0 12px;font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.panel p.hint{color:var(--muted);font-size:13.5px;margin:0 0 12px;max-width:80ch}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grow{flex:1 1 200px;min-width:0}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.sw{width:26px;height:26px;border-radius:0;border:2px solid transparent;background:var(--c);padding:0}
+.sw[aria-pressed=true]{border-color:var(--fg);box-shadow:inset 0 0 0 2px var(--raised)}
+.stack3{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;align-items:start}
+.plist{display:flex;flex-direction:column;margin-top:14px}
+.prow{--c:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 10px 10px 14px;margin-top:6px;
+  background:var(--surface);border:1px solid var(--hair);border-left:10px solid var(--c)}
+.pdet{flex-basis:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;padding:10px 4px 4px;border-top:1px solid var(--hair)}
+.pdet label.afl{display:flex;flex-direction:column;gap:6px}
+.pdet textarea{resize:vertical;min-height:90px;font-family:var(--font);text-transform:none;letter-spacing:0;font-size:14px;color:var(--fg)}
+.tasks{list-style:none;margin:6px 0 8px;padding:0;display:flex;flex-direction:column;gap:1px}
+.tasks li{display:flex;align-items:center;gap:6px;padding:3px 4px;border-bottom:1px dotted var(--hair)}
+.tasks li:hover{background:var(--raised)}
+.tasks label{flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0;overflow-wrap:anywhere}
+.tasks input{accent-color:var(--c);width:16px;height:16px;flex:none}
+.tasks li.done span{color:var(--muted);text-decoration:line-through}
+.taskf input{min-height:32px;padding:5px 9px}
+@media (max-width:760px){.pdet{grid-template-columns:1fr}}
+.pcol{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.sw.sm{width:18px;height:18px;border-width:2px}
+.cpick{width:22px;height:22px;padding:0;border:1px dashed var(--line);border-radius:0;background:none;cursor:pointer}
+.cpick::-webkit-color-swatch-wrapper{padding:2px}.cpick::-webkit-color-swatch{border:0}
+.prow input.pn{flex:1 1 220px;min-width:0;border-color:transparent;background:transparent;font-weight:500;padding-inline:6px}
+.prow input.pn:hover,.prow input.pn:focus{border-color:var(--hair);border-bottom-color:var(--line);background:var(--raised)}
+.stat{display:flex;flex-direction:column;align-items:flex-end;min-width:76px;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.stat b{font-size:14px;color:var(--fg);font-weight:500;text-transform:none;letter-spacing:0}
+.arch{opacity:.5}
+.krow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--hair);font-size:14px}
+.krow:first-of-type{border-top:0}
+.banner{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--raised);border:2px dashed var(--line);padding:10px 14px;margin-bottom:14px;font-size:14px}
+.banner span{flex:1 1 240px}
+
+/* report */
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px;margin-top:14px}
+.big{font-family:var(--mono);font-size:30px;font-weight:500}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar .bt{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:5px}
+.bar .bt span:first-child{display:flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere}
+.track{height:10px;background:repeating-linear-gradient(90deg,var(--hair) 0 1px,transparent 1px 10%);border-bottom:1px solid var(--line)}
+.fill{height:100%;background:var(--c)}
+.chart{display:flex;align-items:flex-end;gap:5px;height:190px;padding-top:18px;border-bottom:2px solid var(--line)}
+.col{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.col .stack{width:100%;max-width:46px;display:flex;flex-direction:column-reverse;overflow:hidden;min-height:1px}
+.col .seg1{background:var(--c);width:100%}
+.col .v{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.col .l{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.col.today .l{color:var(--fg);font-weight:600;border-bottom:3px solid var(--today)}
+.log{margin-top:14px}
+.logday{display:flex;justify-content:space-between;padding:14px 4px 6px;font-family:var(--display);font-size:14px;color:var(--fg);font-weight:500;text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid var(--line)}
+.entry{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dotted var(--hair)}
+.entry .when{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:110px}
+.entry .what{flex:1 1 180px;min-width:0;overflow-wrap:anywhere}
+.entry .what small{color:var(--muted);display:block}
+.entry b{font-family:var(--mono)}
+.ib{border:0;background:none;color:var(--muted);width:28px;height:28px;display:grid;place-items:center;padding:0}
+.ib:hover{background:var(--now);color:var(--paper)}
+.err{color:var(--danger);font-size:13px}
+form label{display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+form label input,form label select{font-family:var(--font);text-transform:none;letter-spacing:0;font-size:14px;color:var(--fg)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(560px,calc(100vw - 32px));
+  background:var(--line);color:var(--bg);padding:10px 14px;font-size:14px;z-index:20}
+
+/* mini window (Picture-in-Picture) */
+.pw{--c:var(--muted);height:100vh;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:12px 14px;background:var(--bg);border-left:10px solid var(--c)}
+.pw.run{border-left-color:var(--now)}
+.pw .r{display:flex;align-items:center;gap:8px}
+.pw select{flex:1;min-width:0;min-height:34px;padding:5px 8px}
+.pw .clock{font-size:24px;min-width:0;text-align:left;flex:1}
+.pw .btn{min-height:34px;padding:5px 10px}
+
+@media (max-width:1100px){.week{grid-template-columns:repeat(4,minmax(0,1fr))}.stack3{grid-template-columns:1fr}}
+@media (max-width:760px){.week{grid-template-columns:1fr}.day{min-height:0}.grid2{grid-template-columns:1fr}}
+@media (max-width:760px){.timer{flex-wrap:wrap}}
+@media (max-width:520px){.clock{font-size:20px}.timer select{flex-basis:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="top">
+  <div class="brand"><h1><img src="data:image/png;base64,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" alt="">Collaba <span>Projects</span></h1><span class="sp"></span><span class="sync" id="sync">Тільки в цьому браузері</span><span class="tlabel">Тема</span><span class="seg" role="group" aria-label="Тема"><button data-act="theme" data-v="light" aria-pressed="true">Світла</button><button data-act="theme" data-v="dark" aria-pressed="false">Темна</button></span></div>
+  <div class="timer idle" id="timer"></div>
+</div>
+<nav class="tabs" id="tabs" role="tablist">
+  <button role="tab" data-tab="plan">Планер</button>
+  <button role="tab" data-tab="projects">Проєкти й клавіші</button>
+  <button role="tab" data-tab="report">Облік часу</button>
+</nav>
+<main id="main"></main>
+<div class="toast" id="toast" hidden></div>
+<div id="grain" aria-hidden="true"></div>
+<div class="alert" id="alert" role="alert" hidden></div>
+
+<script>
+const LS='tydzen-v1';
+// Printer's inks for projects: ultramarine, petrol, terracotta, olive, plum, umber, steel, malachite.
+const COLORS=['#2A3AAB','#2E6476','#9A4630','#5A6629','#6E3B5C','#7A5230','#4E5B69','#1F6E67'];
+// Earlier palettes, mapped onto the inks by position so existing projects keep their slot.
+const OLD_PALETTES=[['#4f6bed','#14a38b','#e8833a','#d6457a','#8b5cf6','#3aa655','#d4a017','#5b6b7f'],
+  ['#7d93b8','#6fa39a','#c08f6a','#b87c8e','#9a8cc0','#8aa36f','#c4a95e','#8b949e']];
+const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
+const MON=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+const MONG=['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
+const IC={
+  play:'<svg class="i" viewBox="0 0 16 16"><path d="M4.5 2.5v11l9-5.5z" fill="currentColor"/></svg>',
+  pause:'<svg class="i" viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/><rect x="9.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/></svg>',
+  stop:'<svg class="i" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg>',
+  pip:'<svg class="i" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="4" rx=".8" fill="currentColor"/></svg>'
+};
+
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const pad=n=>String(n).padStart(2,'0');
+const dk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseDk=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const sod=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+const mondayOf=d=>addDays(sod(d),-((d.getDay()+6)%7));
+const isoWeek=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));return Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7)};
+const fmt=ms=>{const m=Math.round(ms/60000);if(m<=0)return '0 хв';const h=Math.floor(m/60);return h?`${h} г ${pad(m%60)} хв`:`${m} хв`};
+const fmtS=ms=>{const m=Math.round(ms/60000);return Math.floor(m/60)+':'+pad(m%60)};
+const clock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`};
+const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
+
+/* ---------- state ---------- */
+function seed(){
+  const mon=mondayOf(new Date()),now=new Date();
+  const P=[{id:'p1',name:'Візуалізація інтер’єру (приклад)',color:COLORS[0],key:'Alt+Digit1'},
+           {id:'p2',name:'Сайт-портфоліо (приклад)',color:COLORS[2],key:'Alt+Digit2'},
+           {id:'p3',name:'Навчання (приклад)',color:COLORS[1],key:'Alt+Digit3'}];
+  const plan={},entries=[];
+  const pat=[['p1','p3'],['p1'],['p2','p3'],['p1','p2'],['p2'],[],[]];
+  for(let w=-2;w<=0;w++)if(w!==-1)pat.forEach((ps,i)=>{plan[dk(addDays(mon,i+w*7))]=ps.map((p,j)=>({p,h:j?2:3}))});
+  const t=(d,h,m)=>{const x=sod(d);x.setHours(h,m);return x.getTime()};
+  const today=(now.getDay()+6)%7;
+  for(let w=-2;w<=0;w++){if(w===-1)continue;
+    for(let i=0;i<5&&(w<0||i<today);i++){const d=addDays(mon,i+w*7);
+      pat[i].forEach((p,j)=>entries.push({id:uid(),p,s:t(d,j?14:10,0),e:t(d,j?15:12,j?30:15),n:''}))}}
+  return {projects:P,plan,entries,timer:null,keys:{pause:'Alt+KeyP',stop:'Alt+KeyS'},demo:true,u:0};
+}
+function normalize(s){
+  s.projects=s.projects||[];s.plan=s.plan||{};s.entries=s.entries||[];
+  s.keys=s.keys||{pause:'Alt+KeyP',stop:'Alt+KeyS'};
+  s.projects.forEach(p=>{for(const pal of OLD_PALETTES){const i=pal.indexOf(String(p.color).toLowerCase());if(i>=0)p.color=COLORS[i]}});
+  if(s.timer&&s.timer.acc===undefined)s.timer.acc=0;
+  for(const k in s.plan)s.plan[k]=(s.plan[k]||[]).map(x=>typeof x==='string'?{p:x,h:0}:x);
+  s.notified=s.notified||{};
+  return s;
+}
+/* In the desktop app (desktop/preload.js) data lives in a file on disk; in a browser it lives in localStorage. */
+const HOST=window.tydzenHost||null;
+let state;
+if(HOST){
+  // Second copy inside the app: if the file on disk is older than this copy, the newer one wins.
+  state=HOST.load();
+  let mirror=null;try{mirror=JSON.parse(localStorage.getItem(LS+'-host')||'null')}catch{}
+  if(mirror&&mirror.projects&&(!state||(mirror.u||0)>(state.u||0)))state=mirror;
+}
+else try{state=JSON.parse(localStorage.getItem(LS)||'null')}catch{state=null}
+state=normalize(state&&state.projects?state:seed());
+const ui={tab:'plan',view:'week',wk:0,mo:0,menu:null,mq:'',msel:null,mh:2,open:{},tp:null,note:'',newColor:COLORS[3],per:'week',confirm:null,adding:false,err:'',over:null,rec:null};
+ui.theme='light';
+try{Object.assign(ui,JSON.parse(localStorage.getItem(LS+'-ui')||'{}'))}catch{}
+const saveUi=()=>{try{localStorage.setItem(LS+'-ui',JSON.stringify({tab:ui.tab,view:ui.view,per:ui.per,theme:ui.theme}))}catch{}};
+/* "Креслення" (kraft) is the default; the graphite board is the second theme. */
+function applyTheme(){
+  document.documentElement.dataset.theme=ui.theme==='dark'?'dark':'light';
+  document.querySelectorAll('[data-act=theme]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===(ui.theme==='dark'?'dark':'light')));
+}
+
+/* ---------- persistence ---------- */
+let dbDoc=null,lastU=0,writing=false,pending=false,wt;
+function setSync(on){const s=document.getElementById('sync');s.className='sync'+(on?' on':'');s.textContent=HOST?'Дані на диску':on?'Синхронізовано':'Тільки в цьому браузері'}
+function save(){
+  state.u=Date.now();lastU=state.u;
+  if(HOST){try{localStorage.setItem(LS+'-host',JSON.stringify(state))}catch{}HOST.save(state);return}
+  try{localStorage.setItem(LS,JSON.stringify(state))}catch{}
+  if(dbDoc){clearTimeout(wt);wt=setTimeout(flush,400)}
+}
+async function flush(){
+  if(writing){pending=true;return}
+  writing=true;
+  try{await dbDoc.set(JSON.parse(JSON.stringify(state)));setSync(true)}catch{setSync(false)}
+  writing=false;
+  if(pending){pending=false;flush()}
+}
+function adopt(r){
+  state=normalize(r);lastU=r.u||0;
+  try{localStorage.setItem(LS,JSON.stringify(state))}catch{}
+  render();
+}
+(async()=>{
+  if(HOST){setSync(true);return}
+  let db=null;
+  try{db=window.claude?await window.claude.use('db'):null}catch{db=null}
+  if(!db)return;
+  dbDoc=db.doc('app/state');
+  try{
+    const s=await dbDoc.get();
+    if(s.exists&&(s.data().u||0)>=(state.u||0))adopt(JSON.parse(JSON.stringify(s.data())));
+    else{lastU=state.u||0;clearTimeout(wt);wt=setTimeout(flush,100)}
+    setSync(true);
+    dbDoc.onSnapshot(s2=>{if(s2.exists&&(s2.data().u||0)>lastU)adopt(JSON.parse(JSON.stringify(s2.data())))},()=>{});
+  }catch{dbDoc=null}
+})();
+
+/* ---------- helpers ---------- */
+const proj=id=>state.projects.find(p=>p.id===id);
+const active=()=>state.projects.filter(p=>!p.archived);
+const planOf=k=>(state.plan[k]||[]).filter(x=>proj(x.p));
+const hLabel=h=>String(h).replace('.',',')+' г';
+const todayK=()=>dk(new Date());
+const elapsed=t=>t?(t.acc||0)+(t.s?Date.now()-t.s:0):0;
+const allEntries=()=>state.timer&&state.timer.s?[...state.entries,{id:'run',p:state.timer.p,s:state.timer.s,e:Date.now(),n:state.timer.n}]:state.entries;
+function totals(a,b){
+  const m={};
+  for(const e of allEntries()){const ms=Math.min(e.e,b)-Math.max(e.s,a);if(ms>0)m[e.p]=(m[e.p]||0)+ms}
+  return m;
+}
+const sum=m=>Object.values(m).reduce((x,y)=>x+y,0);
+const dayRange=d=>[sod(d).getTime(),addDays(sod(d),1).getTime()];
+const runState=id=>{const t=state.timer;return !t||t.p!==id?'':t.s?'run':'paused'};
+let toastT;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,4500)}
+
+/* ---------- timer: start, pause, resume, stop ---------- */
+function closeSegment(){
+  const t=state.timer;if(!t||!t.s)return;
+  const e=Date.now();
+  if(e-t.s>=1000)state.entries.push({id:uid(),p:t.p,s:t.s,e,n:t.n||''});
+  t.acc=(t.acc||0)+(e-t.s);t.s=null;
+}
+function startTimer(p){
+  if(!p)return;
+  closeSegment();
+  state.timer={p,s:Date.now(),acc:0,n:state.timer&&state.timer.p===p?state.timer.n:ui.note.trim()};
+  state.lastP=p;ui.tp=p;ui.note='';save();render();
+}
+function pauseTimer(){if(state.timer&&state.timer.s){closeSegment();save();render()}}
+function resumeTimer(){if(state.timer&&!state.timer.s){state.timer.s=Date.now();save();render()}}
+function stopTimer(){if(!state.timer)return;closeSegment();state.timer=null;save();render()}
+function pauseToggle(){const t=state.timer;if(!t){startTimer(ui.tp);return}t.s?pauseTimer():resumeTimer()}
+function ppProject(id){const t=state.timer;if(t&&t.p===id)t.s?pauseTimer():resumeTimer();else startTimer(id)}
+function chooseProject(id){
+  if(!state.timer){ui.tp=id;renderTimer();renderPip();return}
+  if(state.timer.p!==id)startTimer(id);
+}
+
+/* ---------- render ---------- */
+const $=s=>document.querySelector(s);
+function timerState(){const t=state.timer;return !t?'idle':t.s?'run':'pause'}
+function projOptions(sel){
+  const ps=active();
+  return ps.length?ps.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join(''):'<option>Спершу додайте проєкт</option>';
+}
+function controls(){
+  const st=timerState(),has=active().length>0;
+  if(st==='idle')return `<button class="btn primary" data-act="start-sel" ${has?'':'disabled'}>${IC.play}Старт</button>`;
+  return (st==='run'?`<button class="btn" data-act="pause">${IC.pause}Пауза</button>`:`<button class="btn primary" data-act="resume">${IC.play}Продовжити</button>`)
+    +`<button class="btn stop" data-act="stop">${IC.stop}Зупинити</button>`;
+}
+function renderTimer(){
+  const t=state.timer,el=$('#timer'),st=timerState();
+  if(ui.tp&&!proj(ui.tp))ui.tp=null;
+  if(!ui.tp&&active()[0])ui.tp=active()[0].id;
+  const sel=t?t.p:ui.tp,cur=proj(sel);
+  el.className='timer '+st;
+  el.style.setProperty('--c',cur?cur.color:'var(--muted)');
+  el.innerHTML=`<span class="tdot"></span>
+    <select id="tp" aria-label="Проєкт" ${active().length?'':'disabled'}>${projOptions(sel)}</select>
+    <input type="text" class="note" id="tn" placeholder="Над чим працюєте? (необов’язково)" value="${esc(t?t.n:ui.note)}">
+    <span class="tstate">${st==='run'?'Йде':st==='pause'?'Пауза':''}</span>
+    <div class="clock num" id="clock">${clock(elapsed(t))}</div>
+    ${controls()}
+    ${HOST?`<button class="btn ghost" data-act="bar" title="Показати або сховати смужку на панелі задач">${IC.pip}Смужка</button>`
+      :`<button class="btn ghost" data-act="pip" title="Маленьке вікно поверх усіх програм">${IC.pip}Міні-вікно</button>`}`;
+}
+function tickClock(){
+  const t=state.timer,txt=clock(elapsed(t));
+  const c=document.getElementById('clock');if(c)c.textContent=txt;
+  if(pip){const pc=pip.document.getElementById('pclock');if(pc)pc.textContent=txt}
+  document.title=(alertInfo?'⏰ ':'')+(t?`${t.s?'▶':'❚❚'} ${txt} · Collaba Projects`:'Collaba Projects');
+  checkGoal();
+}
+
+/* ---------- daily goal reached ---------- */
+let alertInfo=null,actx;
+function checkGoal(){
+  const t=state.timer;if(!t||!t.s)return;
+  const k=todayK(),it=planOf(k).find(x=>x.p===t.p);if(!it||!it.h)return;
+  const key=k+':'+t.p;if(state.notified[key])return;
+  const ms=totals(...dayRange(new Date()))[t.p]||0;
+  if(ms>=it.h*36e5){state.notified[key]=true;save();showGoalAlert(k,t.p,it.h)}
+}
+function showGoalAlert(k,p,h){
+  alertInfo={k,p};const pr=proj(p);
+  const others=planOf(k).filter(x=>x.p!==p).map(x=>proj(x.p)).slice(0,4);
+  const el=$('#alert');el.style.setProperty('--c',pr.color);
+  el.innerHTML=`<div><b>${hLabel(h)} на «${esc(pr.name)}» вже витрачено.</b>
+    <div style="color:var(--muted);font-size:13.5px;margin-top:3px">Стільки ви планували на сьогодні. Може, час перемкнутися${others.length?' на інший проєкт':''}?</div></div>
+    ${others.length?`<div class="row">${others.map(o=>`<button class="chip" style="--c:${o.color}" data-act="al-switch" data-p="${o.id}">${IC.play}${esc(o.name)}</button>`).join('')}</div>`:''}
+    <div class="row"><button class="btn sm" data-act="al-more">Ще 30 хв</button><button class="btn sm" data-act="al-pause">${IC.pause}Пауза</button><span class="sp"></span><button class="btn sm ghost" data-act="al-close">Закрити</button></div>`;
+  el.hidden=false;beep();renderPip();HOST?.alert({p});
+  try{if(window.Notification&&Notification.permission==='granted')new Notification('Collaba Projects',{body:`${hLabel(h)} на «${pr.name}» вже витрачено. Може, час перемкнутися?`})}catch{}
+}
+function hideAlert(){alertInfo=null;$('#alert').hidden=true;renderPip();HOST?.alert(null)}
+function beep(){
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
+    [660,880,660].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t0=now+i*.24;
+      o.frequency.value=f;o.connect(g);g.connect(actx.destination);
+      g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.18,t0+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+.2);
+      o.start(t0);o.stop(t0+.22)});
+  }catch{}
+}
+function render(){
+  renderTimer();renderMain();renderPip();
+}
+function renderMain(){
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
+  const demo=state.demo?`<div class="banner"><span>Це приклади, щоб було видно, як усе працює. Додайте свої проєкти й приберіть приклади.</span><button class="btn sm" data-act="clear-demo">Видалити приклади</button></div>`:'';
+  $('#main').innerHTML=demo+(ui.tab==='plan'?viewPlan():ui.tab==='projects'?viewProjects():viewReport());
+}
+
+/* Timer controls and the running highlight live only on today's cards; other days just show their own tracked time. */
+function card(it,k,tt,compact){
+  const id=it.p,p=proj(id),isToday=k===todayK(),rs=isToday?runState(id):'',ms=tt[id]||0,planned=!ms&&!rs;
+  const goal=(it.h||0)*36e5,over=goal&&ms>=goal;
+  const tm=goal?`${fmtS(ms)} / ${hLabel(it.h)}`:ms?(compact?fmtS(ms):fmt(ms)):'+ ціль';
+  return `<div class="card ${compact?'compact':''} ${rs} ${planned?'plan':''}" style="--c:${p.color}" draggable="true" data-drag="${id}" data-from="${k}" title="${esc(p.name)}">
+    <button class="x" data-act="rm-plan" data-d="${k}" data-p="${id}" title="Прибрати з дня" aria-label="Прибрати з дня">✕</button>
+    <div class="nm">${esc(p.name)}${(p.tasks||[]).length?`<button class="tk num" data-act="goto-proj" data-p="${id}" title="Підзадачі">${(p.tasks||[]).filter(x=>x.done).length}/${p.tasks.length}</button>`:''}</div>
+    <div class="cf"><button class="tm num ${over?'over':''} ${!goal&&!ms?'add':''}" data-act="edit-h" data-d="${k}" data-p="${id}" title="Скільки часу планую на цей проєкт у цей день">${tm}</button>
+      ${isToday?`<button class="pp" data-act="pp" data-p="${id}" title="${rs==='run'?'Пауза':rs==='paused'?'Продовжити':'Запустити таймер'}">${rs==='run'?IC.pause:IC.play}</button>`:''}</div>
+    ${goal?`<div class="prog ${over?'over':''}"><i style="width:${Math.min(100,ms/goal*100)}%"></i></div>`:''}
+  </div>`;
+}
+function hourChips(){
+  return `<div class="hrow">${[0,1,2,3,4,5,6].map(h=>`<button type="button" class="hchip" data-act="mh" data-h="${h}" aria-pressed="${ui.mh===h}">${h?h+' г':'без ліміту'}</button>`).join('')}</div>`;
+}
+function addForm(k,right){
+  const m=ui.menu,btns=`<div class="row" style="gap:6px"><button class="btn sm primary" type="submit">${m.edit?'Зберегти':'Додати'}</button><button class="btn sm ghost" type="button" data-act="mclose">Скасувати</button></div>`;
+  if(m.edit){const p=proj(m.edit);
+    return `<form class="addf ${right?'rt':''}" id="addf"><div class="aft"><span class="dot" style="--c:${p.color}"></span>${esc(p.name)}</div><div class="afl">Скільки часу на цей день</div>${hourChips()}
+      ${spentField(m.k,m.edit)}${btns}</form>`}
+  return `<form class="addf ${right?'rt':''}" id="addf"><input type="text" id="aq" placeholder="Новий або наявний проєкт" autocomplete="off" value="${esc(ui.mq)}">
+    <div class="mlist" id="mlist">${menuList(k)}</div><div class="afl">Скільки часу на цей день</div>${hourChips()}
+    <label class="afl" style="display:flex;flex-direction:column;gap:4px">Додати вже витрачений час
+      <select id="bt"><option value="0">—</option>${durOptions()}</select></label>${btns}</form>`;
+}
+function menuList(k){
+  const ids=planOf(k).map(x=>x.p),q=ui.mq.trim().toLowerCase();
+  const ps=active().filter(p=>!ids.includes(p.id)&&(!q||p.name.toLowerCase().includes(q)));
+  let h=ps.map(p=>`<button type="button" data-act="msel" data-p="${p.id}" aria-pressed="${ui.msel===p.id}"><span class="dot" style="--c:${p.color}"></span>${esc(p.name)}</button>`).join('');
+  if(q&&!state.projects.some(p=>p.name.toLowerCase()===q))h+=`<button type="button" class="mnew" data-act="msel" data-p="new" aria-pressed="${ui.msel==='new'}">+ Створити проєкт «${esc(ui.mq.trim())}»</button>`;
+  return h||'<div class="empty">Введіть назву, щоб створити новий проєкт</div>';
+}
+function createProject(name){
+  state.demo=false;
+  const used=new Set(state.projects.map(p=>p.key));
+  let key=null;for(let i=1;i<=9;i++)if(!used.has('Alt+Digit'+i)){key='Alt+Digit'+i;break}
+  const color=ui.newColor,id=uid();
+  state.projects.push({id,name,color,key});
+  ui.newColor=COLORS[(COLORS.indexOf(color)+1)%COLORS.length];
+  return id;
+}
+const durOptions=()=>Array.from({length:24},(_,i)=>`<option value="${i+1}">${i+1} г</option>`).join('');
+/* Forgotten work: today it ends now; on another day it goes after that day's last entry (from 09:00). */
+/* Spent time on a card: hours + minutes, prefilled with what's tracked that day (the running timer counts too). */
+function spentField(k,p){
+  const ms=totals(...dayRange(parseDk(k)))[p]||0,m=Math.round(ms/6e4);
+  return `<div class="afl">Витрачено за цей день (можна виправити вручну)</div>
+    <div class="row" style="gap:6px;align-items:center"><input type="number" id="sph" min="0" max="24" value="${Math.floor(m/60)}" style="width:70px;min-height:34px;padding:5px 8px;background:var(--bg);border:1px solid var(--line);border-radius:8px"> г
+    <input type="number" id="spm" min="0" max="59" step="5" value="${m%60}" style="width:70px;min-height:34px;padding:5px 8px;background:var(--bg);border:1px solid var(--line);border-radius:8px"> хв</div>`;
+}
+/* Sets the day's total for a project: adds a manual entry for the difference, or trims that day's entries from the latest back. */
+function setSpent(p,k,want){
+  const [a,b]=dayRange(parseDk(k)),have=totals(a,b)[p]||0,diff=want-have;
+  if(Math.abs(diff)<6e4)return;
+  if(diff>0){backtrackMs(p,k,diff);return}
+  let cut=-diff;
+  const own=state.entries.filter(e=>e.p===p&&e.e>a&&e.s<b).sort((x,y)=>y.s-x.s);
+  for(const e of own){
+    if(cut<=0)break;
+    const len=Math.min(e.e,b)-Math.max(e.s,a);
+    if(len<=cut){state.entries=state.entries.filter(x=>x!==e);cut-=len}
+    else{e.e-=cut;cut=0}
+  }
+  if(cut>0)toast('Частина часу йде з таймера, що працює зараз: зупиніть його, щоб зменшити більше.');
+}
+function backtrack(p,k,h){backtrackMs(p,k,h*36e5)}
+function backtrackMs(p,k,ms){
+  const [a,b]=dayRange(parseDk(k));let S,E;
+  if(k===todayK()){E=Date.now();S=Math.max(a,E-ms)}
+  else{const last=state.entries.filter(e=>e.s>=a&&e.s<b).reduce((x,e)=>Math.max(x,e.e),a+9*36e5);S=Math.max(a,Math.min(last,b-ms));E=Math.min(b,S+ms)}
+  state.entries.push({id:uid(),p,s:S,e:E,n:'додано вручну'});
+}
+function commitAdd(){
+  const m=ui.menu;if(!m)return;
+  const l=state.plan[m.k]=state.plan[m.k]||[];
+  if(m.edit){
+    const it=l.find(x=>x.p===m.edit);if(it){it.h=ui.mh;delete state.notified[m.k+':'+it.p]}
+    const sh=$('#sph'),sm=$('#spm');
+    if(sh&&sm){const want=(Math.max(0,Number(sh.value)||0)*60+Math.max(0,Number(sm.value)||0))*6e4;setSpent(m.edit,m.k,want)}
+  }
+  else{
+    const q=ui.mq.trim();let pid=ui.msel&&ui.msel!=='new'?ui.msel:null;
+    if(!pid&&q){
+      const ex=state.projects.find(p=>p.name.toLowerCase()===q.toLowerCase());
+      const ids=l.map(x=>x.p),part=active().filter(p=>!ids.includes(p.id)&&p.name.toLowerCase().includes(q.toLowerCase()));
+      pid=ex?ex.id:(ui.msel!=='new'&&part.length===1)?part[0].id:createProject(q);
+      if(ex&&ex.archived)ex.archived=false;
+    }
+    if(!pid){toast('Оберіть проєкт зі списку або введіть назву нового.');return}
+    if(!l.some(x=>x.p===pid))l.push({p:pid,h:ui.mh});
+    const bt=Number($('#bt')?.value||0);if(bt)backtrack(pid,m.k,bt);
+  }
+  if(ui.mh>0)try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch{}
+  ui.menu=null;save();render();
+}
+function tray(){
+  return `<div class="tray">${active().length?`<span>Перетягніть на день:</span>`+active().map(p=>`<span class="chip" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from=""><span class="dot"></span>${esc(p.name)}${p.key?`<span class="kbd">${keyLabel(p.key)}</span>`:''}</span>`).join(''):'Додайте проєкти на вкладці «Проєкти й клавіші», потім розкладіть їх по днях.'}</div>`;
+}
+function viewPlan(){
+  const seg=`<div class="seg" role="group" aria-label="Вигляд"><button data-act="view" data-v="week" aria-pressed="${ui.view==='week'}">Тиждень</button><button data-act="view" data-v="month" aria-pressed="${ui.view==='month'}">Місяць</button></div>`;
+  return ui.view==='month'?viewMonth(seg):viewWeek(seg);
+}
+function nav(seg,title,extra){
+  return `<div class="phead"><h2>${title}</h2>
+    <button class="btn sm" data-act="nav" data-n="-1" aria-label="Назад">←</button>
+    <button class="btn sm" data-act="nav" data-n="0">Сьогодні</button>
+    <button class="btn sm" data-act="nav" data-n="1" aria-label="Вперед">→</button>
+    <span class="sp"></span>${extra}${seg}</div>`;
+}
+function viewWeek(seg){
+  const mon=addDays(mondayOf(new Date()),ui.wk*7),today=dk(new Date()),end=addDays(mon,6);
+  const title=mon.getMonth()===end.getMonth()?`${mon.getDate()}–${end.getDate()} ${MONG[mon.getMonth()]}`:`${mon.getDate()} ${MONG[mon.getMonth()]} – ${end.getDate()} ${MONG[end.getMonth()]}`;
+  const wt=sum(totals(mon.getTime(),addDays(mon,7).getTime()));
+  let days='',wplan=0;
+  for(let i=0;i<7;i++){
+    const d=addDays(mon,i),k=dk(d),items=planOf(k),[a,b]=dayRange(d),tt=totals(a,b),open=ui.menu&&ui.menu.k===k;
+    const ph=items.reduce((s,x)=>s+(x.h||0),0);wplan+=ph;
+    days+=`<section class="day ${k===today?'today':''} ${i>4&&!items.length?'off':''}" data-day="${k}">
+      <div class="dh"><div><b>${WD[i]}</b><span class="dn num">${d.getDate()}</span></div><span class="dtot num">${sum(tt)?fmt(sum(tt)):''}${ph?` з ${hLabel(ph)}`:''}</span></div>
+      <div class="cards">${items.map(it=>card(it,k,tt,false)).join('')||(open?'':`<div class="empty">Вільний день</div>`)}</div>
+      ${open?addForm(k,false):`<button class="adddy" data-act="menu" data-d="${k}">+ Проєкт</button>`}
+    </section>`;
+  }
+  return nav(seg,title,`<span class="dtot num">Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}</span>`)+tray()+`<div class="week">${days}</div>`;
+}
+function viewMonth(seg){
+  const n=new Date(),first=new Date(n.getFullYear(),n.getMonth()+ui.mo,1),last=new Date(first.getFullYear(),first.getMonth()+1,0);
+  const today=dk(n),start=mondayOf(first);
+  const mt=totals(first.getTime(),addDays(last,1).getTime());
+  const planDays={};
+  for(let d=new Date(first);d<=last;d=addDays(d,1))planOf(dk(d)).forEach(x=>planDays[x.p]=(planDays[x.p]||0)+1);
+  const used=state.projects.filter(p=>mt[p.id]||planDays[p.id]).sort((a,b)=>(mt[b.id]||0)-(mt[a.id]||0));
+  const msum=`<div class="msum">${used.length?'<span>Активні цього місяця:</span>'+used.map(p=>`<span class="chip" style="--c:${p.color}"><span class="dot"></span>${esc(p.name)}<span class="num" style="color:var(--muted)">${fmt(mt[p.id]||0)} · ${planDays[p.id]||0} дн.</span></span>`).join(''):'<span>У цьому місяці ще нічого не заплановано й не відстежено.</span>'}</div>`;
+  let rows=`<div class="mrow mhead"><div></div>${WD.map(w=>`<div>${w}</div>`).join('')}</div>`;
+  for(let w=start;w<=last;w=addDays(w,7)){
+    let cells='',busy=false;
+    const wtot=sum(totals(w.getTime(),addDays(w,7).getTime()));
+    for(let i=0;i<7;i++){
+      const d=addDays(w,i),k=dk(d),items=planOf(k),[a,b]=dayRange(d),tt=totals(a,b),out=d.getMonth()!==first.getMonth(),open=ui.menu&&ui.menu.k===k;
+      if(items.length||sum(tt))busy=true;
+      cells+=`<div class="mcell ${out?'out':''} ${k===today?'today':''}" data-day="${k}">
+        <div class="dh"><span class="dn num">${d.getDate()}</span><span class="dtot num">${sum(tt)?fmtS(sum(tt)):''}</span><button class="plus" data-act="menu" data-d="${k}" title="Додати проєкт" aria-label="Додати проєкт">+</button></div>
+        <div class="cards">${items.map(it=>card(it,k,tt,true)).join('')}</div>
+        ${open?addForm(k,i>=4):''}</div>`;
+    }
+    rows+=`<div class="mrow ${busy?'':'idle'}"><div class="wkl"><b>Т ${isoWeek(w)}</b><span class="num">${wtot?fmtS(wtot):'—'}</span></div>${cells}</div>`;
+  }
+  return nav(seg,`${MON[first.getMonth()]} ${first.getFullYear()}`,`<span class="dtot num">Відстежено <b>${fmt(sum(mt))}</b></span>`)+msum+tray()+`<div class="mscroll"><div class="mgrid">${rows}</div></div>`;
+}
+
+const keyLabel=c=>c?c.replace(/Key([A-Z])/,'$1').replace(/Digit(\d)/,'$1').replace('Numpad','Num ').replace('Space','Пробіл'):'';
+function keyBtn(target,val){
+  return `<button class="kbd ${ui.rec===target?'rec':''}" data-act="rec" data-k="${target}" title="Натисніть, потім натисніть потрібну клавішу">${ui.rec===target?'Натисніть клавішу…':val?esc(keyLabel(val)):'Призначити'}</button>`;
+}
+const taskCount=p=>{const t=p.tasks||[];return t.length?` · ${t.filter(x=>x.done).length}/${t.length}`:''};
+function projDetail(p){
+  const tasks=p.tasks||[];
+  return `<div class="pdet">
+    <label class="afl">Нотатки<textarea data-note="${p.id}" rows="4" placeholder="Контакти, посилання, деталі, домовленості…">${esc(p.note||'')}</textarea></label>
+    <div><div class="afl">Підзадачі</div>
+      <ul class="tasks">${tasks.map(k=>`<li class="${k.done?'done':''}"><label><input type="checkbox" data-task="${k.id}" data-p="${p.id}" ${k.done?'checked':''}><span>${esc(k.t)}</span></label>
+        <button class="ib" data-act="tdel" data-p="${p.id}" data-id="${k.id}" title="Видалити підзадачу" aria-label="Видалити підзадачу">✕</button></li>`).join('')}</ul>
+      <form class="taskf row" data-p="${p.id}"><input type="text" class="grow" placeholder="Нова підзадача" maxlength="200" autocomplete="off"><button class="btn sm" type="submit">Додати</button></form></div>
+  </div>`;
+}
+function viewProjects(){
+  const wk=mondayOf(new Date()).getTime(),wkE=addDays(new Date(wk),7).getTime();
+  const all=totals(0,9e15),week=totals(wk,wkE),todayK=dk(new Date());
+  const list=[...state.projects].sort((a,b)=>(a.archived?1:0)-(b.archived?1:0));
+  return `<div class="stack3"><div class="panel"><h3>Новий проєкт</h3>
+    <form id="newp" class="row"><input type="text" id="np" class="grow" placeholder="Назва проєкту" maxlength="80" autocomplete="off">
+    <div class="swatches" role="group" aria-label="Колір">${COLORS.map(c=>`<button type="button" class="sw" style="--c:${c}" data-act="color" data-c="${c}" aria-pressed="${c===ui.newColor}" aria-label="Колір ${c}"></button>`).join('')}</div>
+    <button class="btn primary" type="submit">Додати</button></form>
+    <div class="plist">${list.map(p=>{
+      const days=Object.entries(state.plan).filter(([k,v])=>k>=todayK&&v.some(x=>x.p===p.id)).length;
+      return `<div class="prow ${p.archived?'arch':''}" style="--c:${p.color}"><span class="pcol" title="Змінити колір">${COLORS.map(c=>`<button type="button" class="sw sm" style="--c:${c}" data-act="pcolor" data-p="${p.id}" data-c="${c}" aria-pressed="${c===p.color}" aria-label="Колір ${c}"></button>`).join('')}<input type="color" class="cpick" data-color="${p.id}" value="${p.color}" title="Свій колір" aria-label="Свій колір"></span>
+      <input type="text" class="pn" data-edit="${p.id}" value="${esc(p.name)}" aria-label="Назва проєкту">
+      <div class="stat num"><b>${fmt(week[p.id]||0)}</b>цей тиждень</div>
+      <div class="stat num"><b>${fmt(all[p.id]||0)}</b>всього</div>
+      <div class="stat num"><b>${days}</b>днів у плані</div>
+      ${keyBtn(p.id,p.key)}
+      <button class="btn sm" data-act="archive" data-p="${p.id}">${p.archived?'Повернути':'В архів'}</button>
+      <button class="btn sm" data-act="pdetail" data-p="${p.id}" aria-expanded="${!!ui.open[p.id]}">${ui.open[p.id]?'▾':'▸'} Нотатки й підзадачі${taskCount(p)}</button>
+      <button class="btn sm danger" data-act="del" data-p="${p.id}">${ui.confirm===p.id?'Точно видалити?':'Видалити'}</button>
+      ${ui.open[p.id]?projDetail(p):''}</div>`}).join('')||'<div class="empty">Проєктів ще немає.</div>'}</div></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="panel"><h3>Гарячі клавіші</h3>
+      <p class="hint">Натисніть кнопку поруч із дією або проєктом, потім потрібну клавішу чи поєднання. Можна F1–F12, F13–F24 або Ctrl/Alt + клавіша. Backspace прибирає призначення, Esc скасовує. Клавіша проєкту: запуск, а повторне натискання ставить на паузу.</p>
+      <div class="krow"><span>Пауза / продовжити</span>${keyBtn('pause',state.keys.pause)}</div>
+      <div class="krow"><span>Зупинити</span>${keyBtn('stop',state.keys.stop)}</div>
+      <p class="hint" style="margin:12px 0 0">${HOST?'Клавіші працюють з будь-якої програми, навіть коли планер згорнуто.':'Клавіші працюють, коли активне вікно трекера або міні-вікно. З будь-якої програми вони працюють у версії для Windows.'}</p></div>
+    <div class="panel"><h3>Резервна копія</h3>
+      <p class="hint">${HOST?`Дані зберігаються в <span class="kbd">${esc(HOST.dataPath())}</span>, а щодня там з’являється копія в папці backups (останні 30 днів). Оновлення програми їх не зачіпає.`:'Збережіть усі проєкти й записи часу в файл або відновіть їх із файлу. Так само можна перенести дані в програму для Windows.'}</p>
+      <div class="row">${HOST?'<button class="btn" data-act="open-data">Відкрити папку з даними</button>':''}<button class="btn" data-act="export">Зберегти у файл</button>
+      <label class="btn" style="cursor:pointer">Відновити з файлу<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>
+    </div></div>`;
+}
+
+function periodRange(){
+  const n=new Date();
+  if(ui.per==='week'){const a=mondayOf(n);return [a,addDays(a,7),'Цей тиждень']}
+  if(ui.per==='month'){return [new Date(n.getFullYear(),n.getMonth(),1),new Date(n.getFullYear(),n.getMonth()+1,1),MON[n.getMonth()]+' '+n.getFullYear()]}
+  return [new Date(2000,0,1),addDays(sod(n),1),'Весь час'];
+}
+function viewReport(){
+  const [a,b,label]=periodRange(),A=a.getTime(),B=b.getTime();
+  const tot=totals(A,B),all=sum(tot),rows=Object.entries(tot).sort((x,y)=>y[1]-x[1]);
+  let chart='';
+  if(ui.per!=='all'){
+    const n=Math.round((B-A)/864e5),per=[];let mx=1;
+    for(let i=0;i<n;i++){const d=addDays(a,i),[x,y]=dayRange(d),t=totals(x,y);per.push({d,t,s:sum(t)});mx=Math.max(mx,sum(t))}
+    chart=`<div class="chart">${per.map(({d,t,s})=>`<div class="col ${dk(d)===dk(new Date())?'today':''}" title="${d.getDate()} ${MONG[d.getMonth()]}: ${fmt(s)}">
+      <span class="v num">${s?(s/36e5).toFixed(1).replace('.0',''):''}</span>
+      <div class="stack" style="height:${s/mx*100*.78}%">${Object.entries(t).map(([p,ms])=>`<div class="seg1" style="--c:${(proj(p)||{}).color||'#777'};height:${ms/s*100}%"></div>`).join('')}</div>
+      <span class="l num">${ui.per==='week'?WD[(d.getDay()+6)%7]:d.getDate()}</span></div>`).join('')}</div>`;
+  }
+  const es=allEntries().filter(e=>e.e>A&&e.s<B).sort((x,y)=>y.s-x.s);
+  let log='',lastD='';
+  for(const e of es){
+    const k=dk(new Date(e.s));
+    if(k!==lastD){lastD=k;const d=parseDk(k);const dm=sum(totals(...dayRange(d)));
+      log+=`<div class="logday"><span>${WD[(d.getDay()+6)%7]}, ${d.getDate()} ${MONG[d.getMonth()]}</span><span class="num">${fmt(dm)}</span></div>`}
+    const p=proj(e.p)||{name:'Видалений проєкт',color:'#777'};
+    log+=`<div class="entry"><span class="when num">${hm(e.s)} – ${e.id==='run'?'зараз':hm(e.e)}</span>
+      <span class="what"><span class="dot" style="--c:${p.color};display:inline-block;margin-right:7px"></span>${esc(p.name)}${e.n?`<small>${esc(e.n)}</small>`:''}</span>
+      <b class="num" style="font-weight:500">${fmt(e.e-e.s)}</b>
+      ${e.id==='run'?'':`<button class="ib" data-act="del-entry" data-id="${e.id}" title="Видалити запис" aria-label="Видалити запис">✕</button>`}</div>`;
+  }
+  const form=ui.adding?`<form id="manual" class="row" style="margin-bottom:6px;align-items:flex-end">
+      <label class="grow">Проєкт<select id="mp">${state.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
+      <label>Дата<input type="date" id="md" value="${dk(new Date())}"></label>
+      <label>Початок<input type="time" id="ms" value="09:00"></label>
+      <label>Кінець<input type="time" id="me" value="10:00"></label>
+      <label>або тривалість<select id="mdur"><option value="0">—</option>${durOptions()}</select></label>
+      <label class="grow">Нотатка<input type="text" id="mn" placeholder="необов’язково"></label>
+      <button class="btn primary" type="submit">Зберегти</button>
+      <button class="btn ghost" type="button" data-act="add-toggle">Скасувати</button>
+      ${ui.err?`<div class="err" style="flex-basis:100%">${esc(ui.err)}</div>`:''}</form>`:'';
+  return `<div class="row" style="margin-bottom:2px"><div class="seg" role="group" aria-label="Період">
+      ${[['week','Тиждень'],['month','Місяць'],['all','Весь час']].map(([k,t])=>`<button data-act="per" data-per="${k}" aria-pressed="${ui.per===k}">${t}</button>`).join('')}</div>
+      <span class="sp"></span><button class="btn" data-act="add-toggle" ${state.projects.length?'':'disabled'}>+ Додати час вручну</button></div>
+    <div class="grid2">
+      <div class="panel"><h3>${esc(label)}</h3><div class="big num">${fmt(all)}</div>
+        <div style="color:var(--muted);font-size:13px;margin:2px 0 16px">всього відстежено</div>
+        <div class="bars">${rows.map(([p,ms])=>{const pr=proj(p)||{name:'Видалений проєкт',color:'#777'};return `<div class="bar" style="--c:${pr.color}">
+          <div class="bt"><span><span class="dot"></span>${esc(pr.name)}</span><span class="num"><b style="font-weight:500">${fmt(ms)}</b> · ${Math.round(ms/all*100)}%</span></div>
+          <div class="track"><div class="fill" style="width:${ms/all*100}%"></div></div></div>`}).join('')||'<div class="empty">За цей період записів немає. Запустіть таймер або додайте час вручну.</div>'}</div></div>
+      <div class="panel"><h3>По днях, години</h3>${chart||'<div class="empty">Графік по днях доступний для тижня й місяця.</div>'}</div>
+    </div>
+    <div class="panel log"><h3>Записи часу</h3>${form}${log||'<div class="empty">Записів немає.</div>'}</div>`;
+}
+
+/* ---------- mini window (Document Picture-in-Picture) ---------- */
+let pip=null;
+function renderPip(){
+  if(!pip)return;
+  const t=state.timer,st=timerState(),sel=t?t.p:ui.tp,cur=proj(sel);
+  pip.document.title=cur?cur.name:'Collaba Projects';
+  pip.document.body.innerHTML=`<div class="pw ${st}" style="--c:${cur?cur.color:'var(--muted)'}">
+    <div class="r"><span class="tdot"></span><select id="ptp" aria-label="Проєкт">${projOptions(sel)}</select></div>
+    <div class="r"><span class="clock num" id="pclock">${clock(elapsed(t))}</span>${alertInfo&&alertInfo.p===sel?'<span class="pgoal">план виконано</span>':''}${controls()}</div></div>`;
+}
+async function openPip(){
+  if(pip){pip.focus();return}
+  if(!('documentPictureInPicture' in window)){toast('Міні-вікно працює в Chrome або Edge, якщо відкрити файл tydzen.html напряму.');return}
+  try{pip=await documentPictureInPicture.requestWindow({width:360,height:130})}
+  catch{toast('Тут браузер не дозволяє міні-вікно. Відкрийте файл tydzen.html напряму в Chrome або Edge.');return}
+  for(const ss of document.styleSheets){
+    try{const s=pip.document.createElement('style');s.textContent=[...ss.cssRules].map(r=>r.cssText).join('\n');pip.document.head.append(s)}
+    catch{if(ss.href){const l=pip.document.createElement('link');l.rel='stylesheet';l.href=ss.href;pip.document.head.append(l)}}
+  }
+  pip.document.body.style.cssText='margin:0;padding:0';
+  pip.document.addEventListener('click',onClick);
+  pip.document.addEventListener('change',onChange);
+  pip.document.addEventListener('keydown',onKey);
+  pip.addEventListener('pagehide',()=>{pip=null});
+  renderPip();
+}
+
+/* ---------- export / import ---------- */
+async function exportData(){
+  const json=JSON.stringify(state),name=`tydzen-${dk(new Date())}.json`;
+  try{const dl=window.claude?await window.claude.use('downloads'):null;if(dl){await dl.save({filename:name,data:json});return}}catch{return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;a.click();
+}
+
+/* ---------- events ---------- */
+function onClick(e){
+  const t=e.target.closest('[data-tab],[data-act]');
+  if(ui.menu&&!e.target.closest('.addf')&&!(t&&['menu','edit-h'].includes(t.dataset.act))){ui.menu=null;renderMain()}
+  if(!t)return;
+  if(t.dataset.tab){ui.tab=t.dataset.tab;ui.menu=null;ui.rec=null;saveUi();renderMain();return}
+  const a=t.dataset.act,d=t.dataset;
+  if(a==='start-sel')startTimer(ui.tp);
+  else if(a==='pause')pauseTimer();
+  else if(a==='resume')resumeTimer();
+  else if(a==='stop')stopTimer();
+  else if(a==='pp')ppProject(d.p);
+  else if(a==='pip')openPip();
+  else if(a==='bar')HOST?.toggleBar();
+  else if(a==='theme'){ui.theme=d.v==='dark'?'dark':'light';saveUi();applyTheme()}
+  else if(a==='open-data')HOST?.openDataFolder();
+  else if(a==='view'){ui.view=d.v;ui.menu=null;saveUi();renderMain()}
+  else if(a==='nav'){const k=ui.view==='month'?'mo':'wk';ui[k]=d.n==='0'?0:ui[k]+Number(d.n);ui.menu=null;renderMain()}
+  else if(a==='menu'){ui.menu={k:d.d,edit:null};ui.mq='';ui.msel=null;ui.mh=2;renderMain();$('#aq')?.focus()}
+  else if(a==='edit-h'){const it=planOf(d.d).find(x=>x.p===d.p);ui.menu={k:d.d,edit:d.p};ui.mh=it?it.h||0:0;renderMain()}
+  else if(a==='mclose'){ui.menu=null;renderMain()}
+  else if(a==='mh'){ui.mh=Number(d.h);document.querySelectorAll('.hchip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.h===d.h))}
+  else if(a==='msel'){ui.msel=ui.msel===d.p?null:d.p;document.querySelectorAll('#mlist [data-act=msel]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===ui.msel))}
+  else if(a==='rm-plan'){state.plan[d.d]=(state.plan[d.d]||[]).filter(x=>x.p!==d.p);save();renderMain()}
+  else if(a==='al-switch'){hideAlert();startTimer(d.p)}
+  else if(a==='al-pause'){hideAlert();pauseTimer()}
+  else if(a==='al-close')hideAlert();
+  else if(a==='al-more'){
+    const it=alertInfo&&planOf(alertInfo.k).find(x=>x.p===alertInfo.p);
+    if(it){it.h+=0.5;delete state.notified[alertInfo.k+':'+it.p];save()}
+    hideAlert();renderMain();
+  }
+  else if(a==='pdetail'){ui.open[d.p]=!ui.open[d.p];renderMain()}
+  else if(a==='goto-proj'){ui.tab='projects';ui.open[d.p]=true;saveUi();renderMain()}
+  else if(a==='tdel'){const p=proj(d.p);p.tasks=(p.tasks||[]).filter(x=>x.id!==d.id);save();renderMain()}
+  else if(a==='pcolor'){const p=proj(d.p);if(p){p.color=d.c;save();render()}}
+  else if(a==='color'){ui.newColor=d.c;document.querySelectorAll('#newp .sw').forEach(s=>s.setAttribute('aria-pressed',s.dataset.c===d.c))}
+  else if(a==='archive'){const p=proj(d.p);p.archived=!p.archived;save();render()}
+  else if(a==='rec'){setRec(ui.rec===d.k?null:d.k);renderMain()}
+  else if(a==='export')exportData();
+  else if(a==='del'){
+    if(ui.confirm===d.p){
+      if(state.timer&&state.timer.p===d.p){closeSegment();state.timer=null}
+      state.projects=state.projects.filter(p=>p.id!==d.p);
+      state.entries=state.entries.filter(x=>x.p!==d.p);
+      for(const k in state.plan)state.plan[k]=state.plan[k].filter(x=>x.p!==d.p);
+      ui.confirm=null;save();
+    }else ui.confirm=d.p;
+    render();
+  }
+  else if(a==='per'){ui.per=d.per;saveUi();renderMain()}
+  else if(a==='add-toggle'){ui.adding=!ui.adding;ui.err='';renderMain()}
+  else if(a==='del-entry'){state.entries=state.entries.filter(x=>x.id!==d.id);save();renderMain()}
+  else if(a==='clear-demo'){if(state.timer){closeSegment();state.timer=null}state={projects:[],plan:{},entries:[],timer:null,keys:state.keys,notified:{},u:0};ui.tp=null;save();render()}
+}
+function onChange(e){
+  const t=e.target;
+  if(t.id==='tp'||t.id==='ptp')chooseProject(t.value);
+  else if(t.id==='tn'){if(state.timer){state.timer.n=t.value;save()}else ui.note=t.value}
+  else if(t.id==='imp'){
+    const f=t.files&&t.files[0];if(!f)return;
+    f.text().then(txt=>{const r=JSON.parse(txt);if(!r||!Array.isArray(r.projects))throw 0;adopt(r);save();toast('Дані відновлено з файлу.')})
+      .catch(()=>toast('Це не схоже на файл резервної копії Collaba Projects.'));
+  }
+  else if(t.dataset.note){const p=proj(t.dataset.note);if(p){p.note=t.value;save()}}
+  else if(t.dataset.task){const p=proj(t.dataset.p),k=(p.tasks||[]).find(x=>x.id===t.dataset.task);if(k){k.done=t.checked;save();renderMain()}}
+  else if(t.dataset.color){const p=proj(t.dataset.color);if(p){p.color=t.value;save();render()}}
+  else if(t.dataset.edit){const p=proj(t.dataset.edit);const v=t.value.trim();if(v){p.name=v;save();render()}else t.value=p.name}
+}
+function combo(e){
+  if(['Control','Alt','Shift','Meta','AltGraph'].includes(e.key))return null;
+  return (e.ctrlKey?'Ctrl+':'')+(e.altKey?'Alt+':'')+(e.shiftKey?'Shift+':'')+(e.metaKey?'Win+':'')+e.code;
+}
+function onKey(e){
+  const c=combo(e);if(!c)return;
+  if(ui.menu&&c==='Escape'){ui.menu=null;renderMain();return}
+  if(ui.rec){
+    e.preventDefault();
+    if(c==='Escape'){setRec(null);renderMain();return}
+    const val=c==='Backspace'||c==='Delete'?null:c;
+    if(val){state.projects.forEach(p=>{if(p.key===val)p.key=null});for(const k of ['pause','stop'])if(state.keys[k]===val)state.keys[k]=null}
+    if(ui.rec==='pause'||ui.rec==='stop')state.keys[ui.rec]=val;else{const p=proj(ui.rec);if(p)p.key=val}
+    setRec(null);save();render();return;
+  }
+  const tag=e.target.tagName,typing=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+  if(typing&&!/^(Ctrl|Alt|Win)\+|^F\d/.test(c))return;
+  if(c===state.keys.pause){e.preventDefault();pauseToggle();return}
+  if(c===state.keys.stop){e.preventDefault();stopTimer();return}
+  const p=active().find(x=>x.key===c);
+  if(p){e.preventDefault();ppProject(p.id)}
+}
+document.addEventListener('click',onClick);
+document.addEventListener('change',onChange);
+document.addEventListener('keydown',onKey);
+document.addEventListener('input',e=>{
+  if(e.target.id==='tn'&&!state.timer)ui.note=e.target.value;
+  else if(e.target.id==='aq'&&ui.menu){ui.mq=e.target.value;if(ui.msel==='new'&&!ui.mq.trim())ui.msel=null;$('#mlist').innerHTML=menuList(ui.menu.k)}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(e.target.id==='addf')commitAdd();
+  else if(e.target.classList.contains('taskf')){
+    const p=proj(e.target.dataset.p),inp=e.target.querySelector('input'),v=inp.value.trim();if(!p||!v)return;
+    (p.tasks=p.tasks||[]).push({id:uid(),t:v,done:false});save();renderMain();
+    document.querySelector(`.taskf[data-p="${p.id}"] input`)?.focus();
+  }
+  else if(e.target.id==='newp'){
+    const v=$('#np').value.trim();if(!v){$('#np').focus();return}
+    createProject(v);save();render();$('#np')?.focus();
+  }else if(e.target.id==='manual'){
+    const p=$('#mp').value,day=$('#md').value,s=$('#ms').value,en=$('#me').value;
+    if(!day||!s||!en){ui.err='Заповніть дату, початок і кінець.';renderMain();return}
+    const [y,m,dd]=day.split('-').map(Number),[sh,sm]=s.split(':').map(Number),[eh,em]=en.split(':').map(Number);
+    const dur=Number($('#mdur').value||0),S=new Date(y,m-1,dd,sh,sm).getTime(),E=dur?S+dur*36e5:new Date(y,m-1,dd,eh,em).getTime();
+    if(E<=S){ui.err='Кінець має бути пізніше за початок.';renderMain();return}
+    state.entries.push({id:uid(),p,s:S,e:E,n:$('#mn').value.trim()});
+    ui.adding=false;ui.err='';save();renderMain();
+  }
+});
+/* drag & drop: chips and cards onto days */
+document.addEventListener('dragstart',e=>{
+  const t=e.target.closest('[data-drag]');if(!t)return;
+  e.dataTransfer.setData('text/plain',JSON.stringify({p:t.dataset.drag,from:t.dataset.from}));
+  e.dataTransfer.effectAllowed='move';
+});
+document.addEventListener('dragover',e=>{
+  const d=e.target.closest('[data-day]');if(!d)return;
+  e.preventDefault();
+  if(ui.over!==d.dataset.day){document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));d.classList.add('over');ui.over=d.dataset.day}
+});
+document.addEventListener('dragend',()=>{ui.over=null;document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'))});
+document.addEventListener('drop',e=>{
+  const d=e.target.closest('[data-day]');if(!d)return;
+  e.preventDefault();ui.over=null;
+  let o;try{o=JSON.parse(e.dataTransfer.getData('text/plain'))}catch{return}
+  const k=d.dataset.day;if(!o||!proj(o.p))return;
+  let item={p:o.p,h:0};
+  if(o.from){const fl=state.plan[o.from]||[],f=fl.find(x=>x.p===o.p);if(f)item=f;state.plan[o.from]=fl.filter(x=>x.p!==o.p)}
+  const l=state.plan[k]=state.plan[k]||[];
+  if(!l.some(x=>x.p===o.p))l.push(item);
+  save();renderMain();
+});
+
+/* While a key is being recorded, global hotkeys are paused so the key reaches the page. */
+function setRec(v){ui.rec=v;HOST?.suspendHotkeys(!!v)}
+if(HOST){
+  HOST.onCmd(c=>{
+    if(c.act==='pp')ppProject(c.p);
+    else if(c.act==='start')startTimer(c.p);
+    else if(c.act==='switch')state.timer?chooseProject(c.p):startTimer(c.p);
+    else if(c.act==='pauseToggle')pauseToggle();
+    else if(c.act==='stop')stopTimer();
+  });
+  HOST.onSaveError(msg=>toast(`Не вдалося записати дані на диск (${msg}). Програма повторить спробу, а копія збережена всередині програми.`));
+  HOST.onHotkeyFailed(list=>{if(list.length)toast(`Ці клавіші вже зайняті іншою програмою: ${list.join(', ')}. Призначте інші на вкладці «Проєкти й клавіші».`)});
+}
+if(state.lastP&&proj(state.lastP))ui.tp=state.lastP;
+applyTheme();render();tickClock();
+if(HOST)HOST.save(state);
+setInterval(tickClock,1000);
+setInterval(()=>{const a=document.activeElement;if(state.timer&&state.timer.s&&!ui.menu&&!ui.rec&&!(a&&/INPUT|SELECT/.test(a.tagName)))renderMain()},30000);
+</script>

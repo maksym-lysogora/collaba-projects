@@ -1,0 +1,3 @@
+# Built program and installed packages: rebuilt from source with `npm install` and `npm run build` in desktop/
+desktop/node_modules/
+dist/

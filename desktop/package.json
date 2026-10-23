@@ -1,0 +1,16 @@
+{
+  "name": "collaba-projects",
+  "productName": "Collaba Projects",
+  "version": "1.2.0",
+  "description": "Планер проєктів з таймером і смужкою на панелі задач",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "rcedit": "^4.0.1"
+  }
+}
