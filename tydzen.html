@@ -380,14 +380,59 @@ html{scroll-snap-type:y mandatory}
 .wk{scroll-snap-align:start;scroll-margin-top:var(--snap,200px)}
 
 .wheel{padding-top:10px}
+/* ---- Round 3 (2026-10-23) ---- */
+/* the unfolded card panel floats over neighbours at a usable width */
+.card.open .cexp{position:absolute;left:-6px;top:calc(100% + 6px);width:320px;z-index:6;margin:0;box-shadow:0 14px 34px -10px rgba(0,0,0,.35)}
+.week .day:nth-child(n+5) .card.open .cexp{left:auto;right:-6px}
+.card.compact.open .cexp{width:280px}
+.cexp .tasks label span{overflow-wrap:normal}
+
+body.dragging .wk:not(.cur) *{pointer-events:auto}
+body.dragging .day{transition:none}
+/* month dividers: quiet, same ink as the small week captions, so they don't compete with the frame */
+.mdiv{color:var(--muted);font-size:44px;font-weight:600}
+.mdiv::after{background:var(--hair);height:2px}
+/* the week frame: thick, warm, not black */
+#wkframe{top:calc(var(--snap,200px) - 14px);border:6px solid color-mix(in srgb,var(--sun) 70%,transparent);border-radius:14px}
+/* play/pause on cards: a bare, bigger glyph */
+.pp,:root[data-shape="sq"] .pp{width:34px;height:34px;border:0!important;border-radius:0!important;background:none!important;color:inherit}
+.pp svg.i{width:22px;height:22px}
+.pp:hover{transform:scale(1.15);background:none!important;color:inherit}
+.card.compact .pp svg.i{width:15px;height:15px}
+/* timer row: wider note, colour dot opens the palette, big round main button outside the row */
+.trow{display:flex;align-items:center;gap:18px}
+.trow .timer{margin:0;flex:none}
+.timer .note{flex:none;width:360px}
+.timer select{flex:none;width:280px}
+.tdot{border:0;padding:0;cursor:pointer;width:16px;height:16px}
+.bigbtn{width:70px;height:70px;border-radius:50%;border:0;display:grid;place-items:center;
+  background:var(--accent);color:var(--accent-fg);cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);transition:transform .15s,filter .15s}
+.bigbtn:hover:not(:disabled){transform:scale(1.06);filter:brightness(1.08)}
+.bigbtn[data-act=pause]{background:var(--now);color:var(--paper)}
+.bigbtn svg.i{width:26px;height:26px}
+@media (max-width:760px){.trow{flex-wrap:wrap}}
+/* project colour: one dot that opens a palette of 20 muted inks */
+.prow::before{display:none}
+.pdot{width:20px;height:20px;border-radius:50%;border:0;padding:0;background:var(--c);flex:none;cursor:pointer;box-shadow:0 0 0 2px var(--raised),0 0 0 3px var(--hair)}
+#palpop{position:fixed;z-index:40;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:repeat(5,28px);gap:9px;box-shadow:0 12px 30px rgba(0,0,0,.22)}
+#palpop button{width:28px;height:28px;border-radius:50%;border:0;padding:0;background:var(--c);cursor:pointer}
+#palpop button[aria-pressed=true]{box-shadow:0 0 0 2px var(--raised),0 0 0 4px var(--fg)}
+#palpop button:hover{transform:scale(1.12)}
+/* unfolded card: a pale tint of the card's own ink, no dark rules under fields */
+.cexp{background:color-mix(in srgb,var(--c) 14%,var(--paper));border:0;color:var(--fg)}
+.cexp input[type=text],.cexp input[type=number]{border:1px solid color-mix(in srgb,var(--c) 35%,transparent)!important;background:color-mix(in srgb,var(--c) 6%,var(--paper))}
+.cexp .tasks li{border-bottom:0}
+.cexp .tasks li:hover{background:color-mix(in srgb,var(--c) 10%,transparent)}
+.cexp .hchip{border-color:color-mix(in srgb,var(--c) 40%,transparent);background:transparent}
+.cexp .hchip[aria-pressed=true]{background:var(--c);color:var(--paper);border-color:var(--c)}
 </style>
 
 <div class="top">
   <div class="brand"><h1><img src="data:image/png;base64,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" alt="">Collaba <span>Projects</span></h1><span class="sp"></span><span class="sync" id="sync">Тільки в цьому браузері</span><span class="tlabel">Форми</span><span class="seg" role="group" aria-label="Форми"><button data-act="shape" data-v="sq" aria-pressed="true">Прямі</button><button data-act="shape" data-v="round" aria-pressed="false">Круглі</button></span><span class="tlabel">Тема</span><span class="seg" role="group" aria-label="Тема"><button data-act="theme" data-v="light" aria-pressed="true">Світла</button><button data-act="theme" data-v="dark" aria-pressed="false">Темна</button></span></div>
-  <div class="timer idle" id="timer"></div>
+  <div class="trow"><div class="timer idle" id="timer"></div><div id="tbig"></div></div>
   <nav class="tabs" id="tabs" role="tablist">
     <button role="tab" data-tab="plan">Планер</button>
-    <button role="tab" data-tab="projects">Проєкти й клавіші</button>
+    <button role="tab" data-tab="projects">Проєкти</button>
     <button role="tab" data-tab="report">Облік часу</button>
   </nav>
 </div>
@@ -566,9 +611,10 @@ function projOptions(sel){
 }
 function controls(){
   const st=timerState(),has=active().length>0;
-  if(st==='idle')return `<button class="btn primary" data-act="start-sel" ${has?'':'disabled'}>${IC.play}Старт</button>`;
-  return (st==='run'?`<button class="btn" data-act="pause">${IC.pause}Пауза</button>`:`<button class="btn primary" data-act="resume">${IC.play}Продовжити</button>`)
-    +`<button class="btn stop" data-act="stop">${IC.stop}Зупинити</button>`;
+  // The main action is one big round button beside the timer row; "stop" stays small inside the row.
+  if(st==='idle')return `<button class="bigbtn" data-act="start-sel" ${has?'':'disabled'} title="Старт" aria-label="Старт">${IC.play}</button>`;
+  return `<button class="btn stop" data-act="stop">${IC.stop}Зупинити</button>`
+    +(st==='run'?`<button class="bigbtn" data-act="pause" title="Пауза" aria-label="Пауза">${IC.pause}</button>`:`<button class="bigbtn" data-act="resume" title="Продовжити" aria-label="Продовжити">${IC.play}</button>`);
 }
 function renderTimer(){
   const t=state.timer,el=$('#timer'),st=timerState();
@@ -577,14 +623,13 @@ function renderTimer(){
   const sel=t?t.p:ui.tp,cur=proj(sel);
   el.className='timer '+st;
   el.style.setProperty('--c',cur?cur.color:'var(--muted)');
-  el.innerHTML=`<span class="tdot"></span>
+  el.innerHTML=`<button class="tdot" data-act="palette" data-p="${sel||''}" title="Колір проєкту" aria-label="Колір проєкту"></button>
     <select id="tp" aria-label="Проєкт" ${active().length?'':'disabled'}>${projOptions(sel)}</select>
     <input type="text" class="note" id="tn" placeholder="Над чим працюєте? (необов’язково)" value="${esc(t?t.n:ui.note)}">
     <span class="tstate">${st==='run'?'Йде':st==='pause'?'Пауза':''}</span>
     <div class="clock num" id="clock">${clock(elapsed(t))}</div>
-    ${controls()}
-    ${HOST?`<button class="btn ghost" data-act="bar" title="Показати або сховати смужку на панелі задач">${IC.pip}Смужка</button>`
-      :`<button class="btn ghost" data-act="pip" title="Маленьке вікно поверх усіх програм">${IC.pip}Міні-вікно</button>`}`;
+    ${controls().replace(/<button class="bigbtn"[\s\S]*$/,'')}`;
+  const m=controls().match(/<button class="bigbtn"[\s\S]*$/);$('#tbig').innerHTML=m?m[0]:'';
 }
 function tickClock(){
   const t=state.timer,txt=clock(elapsed(t));
@@ -754,7 +799,7 @@ function commitAdd(){
   ui.menu=null;save();render();
 }
 function tray(){
-  return `<div class="tray">${active().length?`<span>Перетягніть на день:</span>`+active().map(p=>`<span class="chip" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from=""><span class="dot"></span>${esc(p.name)}${p.key?`<span class="kbd">${keyLabel(p.key)}</span>`:''}</span>`).join(''):'Додайте проєкти на вкладці «Проєкти й клавіші», потім розкладіть їх по днях.'}</div>`;
+  return `<div class="tray">${active().length?`<span>Перетягніть на день:</span>`+active().map(p=>`<span class="chip" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from=""><span class="dot"></span>${esc(p.name)}</span>`).join(''):'Додайте проєкти на вкладці «Проєкти», потім розкладіть їх по днях.'}</div>`;
 }
 function viewPlan(){
   const seg=`<div class="seg" role="group" aria-label="Вигляд"><button data-act="view" data-v="week" aria-pressed="${ui.view==='week'}">Тиждень</button><button data-act="view" data-v="month" aria-pressed="${ui.view==='month'}">Місяць</button></div>`;
@@ -807,6 +852,20 @@ function viewWeek(seg){
   const w=weekInfo(ui.wk);
   return `<div class="pbar"><div class="phead"><h2 id="wkTitle">${w.title}</h2><span class="sp"></span><span class="dtot num" id="wkInfo">${w.info}</span>${seg}</div>${tray()}</div><div class="wheel" id="wheel">${html}</div>`;
 }
+/* Project colour: a curated palette of 20 muted printer's inks, no free colour picker. */
+const PAL20=['#34507A','#4E6A8F','#2F4858','#5E7F7A','#2F6B66','#6E8F6A','#717A3E','#8E8A4E','#B5532F','#C46B3A',
+  '#D08B3C','#A8443C','#87596C','#9C6F86','#6D5A7E','#8C6A3F','#7A5A48','#4E5866','#6B6F73','#3E3A36'];
+let palOpen=false;
+function openPalette(anchor,pid){
+  const p=proj(pid);if(!p)return;
+  let el=document.getElementById('palpop');
+  if(!el){el=document.createElement('div');el.id='palpop';el.setAttribute('role','dialog');el.setAttribute('aria-label','Колір проєкту');document.body.append(el)}
+  el.innerHTML=PAL20.map(c=>`<button data-act="palpick" data-p="${pid}" data-c="${c}" style="--c:${c}" aria-pressed="${c.toLowerCase()===String(p.color).toLowerCase()}" aria-label="Колір ${c}"></button>`).join('');
+  const r=anchor.getBoundingClientRect();
+  el.style.left=Math.max(8,Math.min(r.left,innerWidth-200))+'px';el.style.top=(r.bottom+8)+'px';el.hidden=false;palOpen=true;
+}
+function closePalette(){const el=document.getElementById('palpop');if(el)el.hidden=true;palOpen=false}
+
 /* The frame is fixed on screen just under the header; weeks scroll under it and snap into it.
    Only its height changes (animated), following the active week. */
 let frameRO=null;
@@ -815,9 +874,10 @@ function placeFrame(){
   if(!fr)return;
   if(ui.tab!=='plan'||ui.view!=='week'||!cur){fr.classList.remove('on');return}
   const r=wheel.getBoundingClientRect();
-  fr.style.left=(r.left-10)+'px';fr.style.width=(r.width+20)+'px';fr.style.height=(cur.offsetHeight+20)+'px';fr.classList.add('on');
-  if(!frameRO&&window.ResizeObserver)frameRO=new ResizeObserver(()=>placeFrame());
-  if(frameRO){frameRO.disconnect();frameRO.observe(cur)}
+  fr.style.left=(r.left-14)+'px';fr.style.width=(r.width+28)+'px';fr.style.height=(cur.offsetHeight+28)+'px';fr.classList.add('on');
+  // Watch only the active week's size; re-attach when the active week changes (not on every call: that loops).
+  if(!frameRO&&window.ResizeObserver)frameRO=new ResizeObserver(()=>requestAnimationFrame(placeFrame));
+  if(frameRO&&frameRO.el!==cur){frameRO.disconnect();frameRO.observe(cur);frameRO.el=cur}
 }
 addEventListener('resize',placeFrame);
 /* Called while scrolling: pick the week closest to the middle of the screen and make it the active one. */
@@ -889,22 +949,16 @@ function viewProjects(){
     <button class="btn primary" type="submit">Додати</button></form>
     <div class="plist">${list.map(p=>{
       const days=Object.entries(state.plan).filter(([k,v])=>k>=todayK&&v.some(x=>x.p===p.id)).length;
-      return `<div class="prow ${p.archived?'arch':''}" style="--c:${p.color}"><span class="pcol" title="Змінити колір">${COLORS.map(c=>`<button type="button" class="sw sm" style="--c:${c}" data-act="pcolor" data-p="${p.id}" data-c="${c}" aria-pressed="${c===p.color}" aria-label="Колір ${c}"></button>`).join('')}<input type="color" class="cpick" data-color="${p.id}" value="${p.color}" title="Свій колір" aria-label="Свій колір"></span>
+      return `<div class="prow ${p.archived?'arch':''}" style="--c:${p.color}"><button class="pdot" data-act="palette" data-p="${p.id}" title="Змінити колір" aria-label="Змінити колір"></button>
       <input type="text" class="pn" data-edit="${p.id}" value="${esc(p.name)}" aria-label="Назва проєкту">
       <div class="stat num"><b>${fmt(week[p.id]||0)}</b>цей тиждень</div>
       <div class="stat num"><b>${fmt(all[p.id]||0)}</b>всього</div>
       <div class="stat num"><b>${days}</b>днів у плані</div>
-      ${keyBtn(p.id,p.key)}
       <button class="btn sm" data-act="archive" data-p="${p.id}">${p.archived?'Повернути':'В архів'}</button>
       <button class="btn sm" data-act="pdetail" data-p="${p.id}" aria-expanded="${!!ui.open[p.id]}">${ui.open[p.id]?'▾':'▸'} Нотатки й підзадачі${taskCount(p)}</button>
       <button class="btn sm danger" data-act="del" data-p="${p.id}">${ui.confirm===p.id?'Точно видалити?':'Видалити'}</button>
       ${ui.open[p.id]?projDetail(p):''}</div>`}).join('')||'<div class="empty">Проєктів ще немає.</div>'}</div></div>
     <div style="display:flex;flex-direction:column;gap:14px">
-    <div class="panel"><h3>Гарячі клавіші</h3>
-      <p class="hint">Натисніть кнопку поруч із дією або проєктом, потім потрібну клавішу чи поєднання. Можна F1–F12, F13–F24 або Ctrl/Alt + клавіша. Backspace прибирає призначення, Esc скасовує. Клавіша проєкту: запуск, а повторне натискання ставить на паузу.</p>
-      <div class="krow"><span>Пауза / продовжити</span>${keyBtn('pause',state.keys.pause)}</div>
-      <div class="krow"><span>Зупинити</span>${keyBtn('stop',state.keys.stop)}</div>
-      <p class="hint" style="margin:12px 0 0">${HOST?'Клавіші працюють з будь-якої програми, навіть коли планер згорнуто.':'Клавіші працюють, коли активне вікно трекера або міні-вікно. З будь-якої програми вони працюють у версії для Windows.'}</p></div>
     <div class="panel"><h3>Резервна копія</h3>
       <p class="hint">${HOST?`Дані зберігаються в <span class="kbd">${esc(HOST.dataPath())}</span>, а щодня там з’являється копія в папці backups (останні 30 днів). Оновлення програми їх не зачіпає.`:'Збережіть усі проєкти й записи часу в файл або відновіть їх із файлу. Так само можна перенести дані в програму для Windows.'}</p>
       <div class="row">${HOST?'<button class="btn" data-act="open-data">Відкрити папку з даними</button>':''}<button class="btn" data-act="export">Зберегти у файл</button>
@@ -1006,6 +1060,7 @@ function onClick(e){
   if(ui.menu&&!e.target.closest('.addf')&&!(t&&['menu','edit-h'].includes(t.dataset.act))){ui.menu=null;renderMain()}
   // A click on a card's body (not on its buttons) unfolds it; a click on the unfolded panel stays inside.
   const cd=e.target.closest('.card');
+  if(palOpen&&!e.target.closest('#palpop')&&!(t&&t.dataset.act==='palette'))closePalette();
   if((!t||t.dataset.act==='wkgo')&&cd&&!e.target.closest('.cexp')){const key=cd.dataset.from+'|'+cd.dataset.drag;ui.exp=ui.exp===key?null:key;renderMain();return}
   if(!t)return;
   if(t.dataset.tab){ui.scrollWeek=true;ui.tab=t.dataset.tab;ui.menu=null;ui.rec=null;saveUi();renderMain();return}
@@ -1050,6 +1105,8 @@ function onClick(e){
   else if(a==='goto-proj'){ui.tab='projects';ui.open[d.p]=true;saveUi();renderMain()}
   else if(a==='tdel'){const p=proj(d.p);p.tasks=(p.tasks||[]).filter(x=>x.id!==d.id);save();renderMain()}
   else if(a==='pcolor'){const p=proj(d.p);if(p){p.color=d.c;save();render()}}
+  else if(a==='palette'){openPalette(t,d.p)}
+  else if(a==='palpick'){const p=proj(d.p);closePalette();if(p){p.color=d.c;save();render()}}
   else if(a==='color'){ui.newColor=d.c;document.querySelectorAll('#newp .sw').forEach(s=>s.setAttribute('aria-pressed',s.dataset.c===d.c))}
   else if(a==='archive'){const p=proj(d.p);p.archived=!p.archived;save();render()}
   else if(a==='rec'){setRec(ui.rec===d.k?null:d.k);renderMain()}
@@ -1091,6 +1148,7 @@ function combo(e){
 function onKey(e){
   const c=combo(e);if(!c)return;
   if(ui.menu&&c==='Escape'){ui.menu=null;renderMain();return}
+  if(palOpen&&c==='Escape'){closePalette();return}
   if(ui.exp&&c==='Escape'){ui.exp=null;renderMain();return}
   if(ui.rec){
     e.preventDefault();
@@ -1148,13 +1206,15 @@ document.addEventListener('dragstart',e=>{
   const t=e.target.closest('[data-drag]');if(!t)return;
   e.dataTransfer.setData('text/plain',JSON.stringify({p:t.dataset.drag,from:t.dataset.from}));
   e.dataTransfer.effectAllowed='move';
+  // Weeks outside the frame ignore the mouse; while dragging they must accept a drop too.
+  document.body.classList.add('dragging');
 });
 document.addEventListener('dragover',e=>{
   const d=e.target.closest('[data-day]');if(!d)return;
   e.preventDefault();
   if(ui.over!==d.dataset.day){document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));d.classList.add('over');ui.over=d.dataset.day}
 });
-document.addEventListener('dragend',()=>{ui.over=null;document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'))});
+document.addEventListener('dragend',()=>{document.body.classList.remove('dragging');ui.over=null;document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'))});
 document.addEventListener('drop',e=>{
   const d=e.target.closest('[data-day]');if(!d)return;
   e.preventDefault();ui.over=null;
@@ -1164,6 +1224,7 @@ document.addEventListener('drop',e=>{
   if(o.from){const fl=state.plan[o.from]||[],f=fl.find(x=>x.p===o.p);if(f)item=f;state.plan[o.from]=fl.filter(x=>x.p!==o.p)}
   const l=state.plan[k]=state.plan[k]||[];
   if(!l.some(x=>x.p===o.p))l.push(item);
+  document.body.classList.remove('dragging');
   save();renderMain();
 });
 
