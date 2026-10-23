@@ -8,9 +8,9 @@
    what is running now, ochre for today. Second theme: graphite board. Paper grain sits over everything (#grain).
    Layout: sticky timer strip on top, tabs, then week columns or a month grid on a 32 px drafting grid. */
 :root{
-  --bg:#E8DCC4; --grid:rgba(36,39,43,.075); --surface:#EFE5D0; --raised:#F6F0E3; --line:#24272B; --hair:#C4B391;
-  --fg:#24272B; --muted:#5E5A50; --accent:#2A3AAB; --accent-fg:#F3EAD7; --now:#D23F2A; --today:#C98A1E;
-  --danger:#B8321F; --ok:#1F6E67; --paper:#F3EAD7; --grain:.08; --brand:#2A3AAB;
+  --bg:#D6C09A; --grid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 13v6M13 16h6' stroke='%2324272B' stroke-opacity='.28' stroke-width='1'/%3E%3C/svg%3E"); --surface:#E2D0AF; --raised:#ECDFC6; --line:#24272B; --hair:#B59C72;
+  --fg:#24272B; --muted:#574F40; --accent:#2A3AAB; --accent-fg:#F3EAD7; --now:#D23F2A; --today:#C98A1E;
+  --danger:#B8321F; --ok:#1F6E67; --paper:#F3EAD7; --grain:.16; --brand:#2A3AAB;
   --display:'Oswald','Arial Narrow',Arial,sans-serif;
   --font:'Jost','Segoe UI',system-ui,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
@@ -19,7 +19,7 @@
   color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --bg:#24272B; --grid:rgba(232,220,196,.045); --surface:#2B2F34; --raised:#33373D; --line:#A39C8C; --hair:#41464E;
+  --bg:#24272B; --grid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='1' fill='%23E8DCC4' fill-opacity='.16'/%3E%3C/svg%3E"); --surface:#2B2F34; --raised:#33373D; --line:#A39C8C; --hair:#41464E;
   --fg:#E8DCC4; --muted:#A39C8C; --accent:#8A96F2; --accent-fg:#141836; --now:#E5533D; --today:#E0A030;
   --danger:#F0806C; --ok:#6FB8AE; --grain:.05;
   color-scheme:dark;
@@ -28,8 +28,7 @@
 [hidden]{display:none!important}
 body{color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;margin:0;
   background-color:var(--bg);
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:32px 32px;
+  background-image:var(--grid);background-size:32px 32px;
   padding-block:0 48px;padding-left:var(--gut);padding-right:var(--gutr)}
 #grain{position:fixed;inset:0;pointer-events:none;z-index:30;opacity:var(--grain);mix-blend-mode:multiply;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .17 0 0 0 0 .12 0 0 0 1.1 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -130,6 +129,13 @@ button.kbd.rec{border-color:var(--now);color:var(--now)}
 .card.compact .pp svg.i{width:10px;height:10px}
 .card.compact .x{top:2px;right:2px;width:18px;height:18px;font-size:12px}
 .card.compact .tm{font-size:11px}
+.card.open{cursor:default;filter:none}
+.cexp{display:flex;flex-direction:column;gap:7px;margin:4px -24px 0 -6px;padding:10px;background:var(--raised);color:var(--fg);border:1px solid var(--line);cursor:default}
+.cexp input[type=number]{width:46px;min-height:28px;padding:2px 4px;font-size:13px}
+.cexp .row{flex-wrap:wrap;column-gap:4px!important;font-size:12px}
+.cexp .tasks{margin:0}
+.cexp .tasks input{accent-color:var(--c)}
+.card.compact .cexp{margin:4px -18px 0 -4px;padding:8px}
 .card .tk{margin-left:6px;border:1px solid currentColor;padding:0 5px;font-family:var(--mono);font-size:10.5px;background:transparent;color:inherit;vertical-align:1px}
 
 .addf{display:flex;flex-direction:column;gap:8px;background:var(--raised);border:2px solid var(--line);padding:12px;box-shadow:6px 6px 0 var(--hair);z-index:4;font-size:13.5px;color:var(--fg)}
@@ -170,6 +176,16 @@ button.chip{cursor:pointer}
 .adddy:hover{border-style:solid;color:var(--fg);background:var(--raised)}
 .empty{color:var(--muted);font-size:13px;padding:6px 2px}
 
+/* week wheel */
+.wheel{display:flex;flex-direction:column;gap:10px}
+.wk-ghost{position:relative;display:flex;flex-direction:column;gap:6px;max-height:130px;overflow:hidden;opacity:.32;filter:grayscale(1);cursor:pointer;transition:opacity .15s}
+.wk-ghost:hover{opacity:.6}
+.wk-ghost *{pointer-events:none}
+.wk-ghost.prev{justify-content:flex-end;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 70%);mask-image:linear-gradient(to bottom,transparent,#000 70%)}
+.wk-ghost.prev .wk-ghost-l{order:2}
+.wk-ghost.next{-webkit-mask-image:linear-gradient(to top,transparent,#000 70%);mask-image:linear-gradient(to top,transparent,#000 70%)}
+.wk-ghost .week{flex:none}
+.wk-ghost-l{margin:0;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--fg)}
 /* month view */
 @media (max-width:900px){.mscroll{overflow-x:auto}}
 .mgrid{min-width:820px;display:flex;flex-direction:column;gap:6px}
@@ -354,7 +370,7 @@ if(HOST){
 }
 else try{state=JSON.parse(localStorage.getItem(LS)||'null')}catch{state=null}
 state=normalize(state&&state.projects?state:seed());
-const ui={tab:'plan',view:'week',wk:0,mo:0,menu:null,mq:'',msel:null,mh:2,open:{},tp:null,note:'',newColor:COLORS[3],per:'week',confirm:null,adding:false,err:'',over:null,rec:null};
+const ui={tab:'plan',view:'week',wk:0,mo:0,menu:null,mq:'',msel:null,mh:2,open:{},exp:null,tp:null,note:'',newColor:COLORS[3],per:'week',confirm:null,adding:false,err:'',over:null,rec:null};
 ui.theme='light';
 try{Object.assign(ui,JSON.parse(localStorage.getItem(LS+'-ui')||'{}'))}catch{}
 const saveUi=()=>{try{localStorage.setItem(LS+'-ui',JSON.stringify({tab:ui.tab,view:ui.view,per:ui.per,theme:ui.theme}))}catch{}};
@@ -523,14 +539,34 @@ function card(it,k,tt,compact){
   const id=it.p,p=proj(id),isToday=k===todayK(),rs=isToday?runState(id):'',ms=tt[id]||0,planned=!ms&&!rs;
   const goal=(it.h||0)*36e5,over=goal&&ms>=goal;
   const tm=goal?`${fmtS(ms)} / ${hLabel(it.h)}`:ms?(compact?fmtS(ms):fmt(ms)):'+ ціль';
-  return `<div class="card ${compact?'compact':''} ${rs} ${planned?'plan':''}" style="--c:${p.color}" draggable="true" data-drag="${id}" data-from="${k}" title="${esc(p.name)}">
+  const open=ui.exp===k+'|'+id,dt=it.tasks||[];
+  return `<div class="card ${compact?'compact':''} ${rs} ${planned?'plan':''} ${open?'open':''}" style="--c:${p.color}" draggable="${open?'false':'true'}" data-drag="${id}" data-from="${k}" title="${open?'':'Клік — розгорнути'}">
     <button class="x" data-act="rm-plan" data-d="${k}" data-p="${id}" title="Прибрати з дня" aria-label="Прибрати з дня">✕</button>
-    <div class="nm">${esc(p.name)}${(p.tasks||[]).length?`<button class="tk num" data-act="goto-proj" data-p="${id}" title="Підзадачі">${(p.tasks||[]).filter(x=>x.done).length}/${p.tasks.length}</button>`:''}</div>
-    <div class="cf"><button class="tm num ${over?'over':''} ${!goal&&!ms?'add':''}" data-act="edit-h" data-d="${k}" data-p="${id}" title="Скільки часу планую на цей проєкт у цей день">${tm}</button>
+    <div class="nm">${esc(p.name)}${dt.length?`<span class="tk num" title="Задачі на день">${dt.filter(x=>x.done).length}/${dt.length}</span>`:''}</div>
+    <div class="cf"><button class="tm num ${over?'over':''} ${!goal&&!ms?'add':''}" data-act="cexp" data-d="${k}" data-p="${id}" title="Розгорнути: час, ціль, задачі">${tm}</button>
       ${isToday?`<button class="pp" data-act="pp" data-p="${id}" title="${rs==='run'?'Пауза':rs==='paused'?'Продовжити':'Запустити таймер'}">${rs==='run'?IC.pause:IC.play}</button>`:''}</div>
     ${goal?`<div class="prog ${over?'over':''}"><i style="width:${Math.min(100,ms/goal*100)}%"></i></div>`:''}
+    ${open?cardPanel(it,k,ms):''}
   </div>`;
 }
+/* The unfolded card: spent time, the day's goal and the day's own checklist. Changes apply at once. */
+function cardPanel(it,k,ms){
+  const m=Math.round(ms/6e4),a=`data-d="${k}" data-p="${it.p}"`,dt=it.tasks||[];
+  return `<div class="cexp">
+    <div class="afl">Витрачено за день</div>
+    <div class="row" style="gap:6px;align-items:center"><input type="number" id="cxh" min="0" max="24" value="${Math.floor(m/60)}" aria-label="Години"> г
+      <input type="number" id="cxm" min="0" max="59" step="5" value="${m%60}" aria-label="Хвилини"> хв
+      <button class="btn sm" data-act="cx-spent" ${a}>Зберегти</button></div>
+    <div class="afl">Планую на день</div>
+    <div class="hrow">${[0,1,2,3,4,5,6].map(h=>`<button class="hchip" data-act="cx-goal" ${a} data-h="${h}" aria-pressed="${(it.h||0)===h}">${h?h+' г':'—'}</button>`).join('')}</div>
+    <div class="afl">Задачі</div>
+    <ul class="tasks">${dt.map(t=>`<li class="${t.done?'done':''}"><label><input type="checkbox" data-dtask="${t.id}" ${a} ${t.done?'checked':''}><span>${esc(t.t)}</span></label>
+      <button class="ib" data-act="cx-tdel" ${a} data-id="${t.id}" title="Видалити задачу" aria-label="Видалити задачу">✕</button></li>`).join('')}</ul>
+    <form class="cx-taskf row" style="gap:6px" ${a}><input type="text" class="grow" placeholder="Нова задача" maxlength="200" autocomplete="off" aria-label="Нова задача"><button class="btn sm" type="submit" title="Додати задачу">+</button></form>
+    <button class="btn sm ghost" data-act="cexp" ${a}>Згорнути</button>
+  </div>`;
+}
+const planItem=(k,p)=>(state.plan[k]||[]).find(x=>x.p===p);
 function hourChips(){
   return `<div class="hrow">${[0,1,2,3,4,5,6].map(h=>`<button type="button" class="hchip" data-act="mh" data-h="${h}" aria-pressed="${ui.mh===h}">${h?h+' г':'без ліміту'}</button>`).join('')}</div>`;
 }
@@ -628,11 +664,9 @@ function nav(seg,title,extra){
     <button class="btn sm" data-act="nav" data-n="1" aria-label="Вперед">→</button>
     <span class="sp"></span>${extra}${seg}</div>`;
 }
-function viewWeek(seg){
-  const mon=addDays(mondayOf(new Date()),ui.wk*7),today=dk(new Date()),end=addDays(mon,6);
-  const title=mon.getMonth()===end.getMonth()?`${mon.getDate()}–${end.getDate()} ${MONG[mon.getMonth()]}`:`${mon.getDate()} ${MONG[mon.getMonth()]} – ${end.getDate()} ${MONG[end.getMonth()]}`;
-  const wt=sum(totals(mon.getTime(),addDays(mon,7).getTime()));
-  let days='',wplan=0;
+const weekTitle=(mon,end)=>mon.getMonth()===end.getMonth()?`${mon.getDate()}–${end.getDate()} ${MONG[mon.getMonth()]}`:`${mon.getDate()} ${MONG[mon.getMonth()]} – ${end.getDate()} ${MONG[end.getMonth()]}`;
+function weekDays(mon){
+  const today=dk(new Date());let days='',wplan=0;
   for(let i=0;i<7;i++){
     const d=addDays(mon,i),k=dk(d),items=planOf(k),[a,b]=dayRange(d),tt=totals(a,b),open=ui.menu&&ui.menu.k===k;
     const ph=items.reduce((s,x)=>s+(x.h||0),0);wplan+=ph;
@@ -642,7 +676,21 @@ function viewWeek(seg){
       ${open?addForm(k,false):`<button class="adddy" data-act="menu" data-d="${k}">+ Проєкт</button>`}
     </section>`;
   }
-  return nav(seg,title,`<span class="dtot num">Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}</span>`)+tray()+`<div class="week">${days}</div>`;
+  return {days,wplan};
+}
+/* Week wheel: the previous week sits dimmed above the current one, the next one below. Scrolling over the
+   planner turns the wheel a week at a time; a click on a dimmed week brings it forward. */
+function ghostWeek(n){
+  const mon=addDays(mondayOf(new Date()),(ui.wk+n)*7);
+  return `<div class="wk-ghost ${n<0?'prev':'next'}" data-act="wkgo" data-n="${n}" title="${n<0?'Попередній':'Наступний'} тиждень · ${weekTitle(mon,addDays(mon,6))}">
+    <p class="wk-ghost-l">${n<0?'↑':'↓'} ${weekTitle(mon,addDays(mon,6))} · тиждень ${isoWeek(mon)}</p>
+    <div class="week">${weekDays(mon).days}</div></div>`;
+}
+function viewWeek(seg){
+  const mon=addDays(mondayOf(new Date()),ui.wk*7),end=addDays(mon,6);
+  const wt=sum(totals(mon.getTime(),addDays(mon,7).getTime())),{days,wplan}=weekDays(mon);
+  return nav(seg,weekTitle(mon,end),`<span class="dtot num">Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}</span>`)+tray()
+    +`<div class="wheel" id="wheel">${ghostWeek(-1)}<div class="week cur">${days}</div>${ghostWeek(1)}</div>`;
 }
 function viewMonth(seg){
   const n=new Date(),first=new Date(n.getFullYear(),n.getMonth()+ui.mo,1),last=new Date(first.getFullYear(),first.getMonth()+1,0);
@@ -809,6 +857,9 @@ async function exportData(){
 function onClick(e){
   const t=e.target.closest('[data-tab],[data-act]');
   if(ui.menu&&!e.target.closest('.addf')&&!(t&&['menu','edit-h'].includes(t.dataset.act))){ui.menu=null;renderMain()}
+  // A click on a card's body (not on its buttons) unfolds it; a click on the unfolded panel stays inside.
+  const cd=e.target.closest('.card');
+  if(!t&&cd&&!e.target.closest('.cexp')){const key=cd.dataset.from+'|'+cd.dataset.drag;ui.exp=ui.exp===key?null:key;renderMain();return}
   if(!t)return;
   if(t.dataset.tab){ui.tab=t.dataset.tab;ui.menu=null;ui.rec=null;saveUi();renderMain();return}
   const a=t.dataset.act,d=t.dataset;
@@ -826,6 +877,11 @@ function onClick(e){
   else if(a==='menu'){ui.menu={k:d.d,edit:null};ui.mq='';ui.msel=null;ui.mh=2;renderMain();$('#aq')?.focus()}
   else if(a==='edit-h'){const it=planOf(d.d).find(x=>x.p===d.p);ui.menu={k:d.d,edit:d.p};ui.mh=it?it.h||0:0;renderMain()}
   else if(a==='mclose'){ui.menu=null;renderMain()}
+  else if(a==='wkgo'){ui.wk+=Number(d.n);ui.menu=null;ui.exp=null;renderMain()}
+  else if(a==='cexp'){const key=d.d+'|'+d.p;ui.exp=ui.exp===key?null:key;renderMain()}
+  else if(a==='cx-spent'){const h=Math.max(0,Number($('#cxh').value)||0),mi=Math.max(0,Number($('#cxm').value)||0);setSpent(d.p,d.d,(h*60+mi)*6e4);save();renderMain()}
+  else if(a==='cx-goal'){const it=planItem(d.d,d.p);if(it){it.h=Number(d.h);delete state.notified[d.d+':'+d.p];save();renderMain()}}
+  else if(a==='cx-tdel'){const it=planItem(d.d,d.p);if(it){it.tasks=(it.tasks||[]).filter(x=>x.id!==d.id);save();renderMain()}}
   else if(a==='mh'){ui.mh=Number(d.h);document.querySelectorAll('.hchip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.h===d.h))}
   else if(a==='msel'){ui.msel=ui.msel===d.p?null:d.p;document.querySelectorAll('#mlist [data-act=msel]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===ui.msel))}
   else if(a==='rm-plan'){state.plan[d.d]=(state.plan[d.d]||[]).filter(x=>x.p!==d.p);save();renderMain()}
@@ -869,6 +925,7 @@ function onChange(e){
     f.text().then(txt=>{const r=JSON.parse(txt);if(!r||!Array.isArray(r.projects))throw 0;adopt(r);save();toast('Дані відновлено з файлу.')})
       .catch(()=>toast('Це не схоже на файл резервної копії Collaba Projects.'));
   }
+  else if(t.dataset.dtask){const it=planItem(t.dataset.d,t.dataset.p),k=it&&(it.tasks||[]).find(x=>x.id===t.dataset.dtask);if(k){k.done=t.checked;save();renderMain()}}
   else if(t.dataset.note){const p=proj(t.dataset.note);if(p){p.note=t.value;save()}}
   else if(t.dataset.task){const p=proj(t.dataset.p),k=(p.tasks||[]).find(x=>x.id===t.dataset.task);if(k){k.done=t.checked;save();renderMain()}}
   else if(t.dataset.color){const p=proj(t.dataset.color);if(p){p.color=t.value;save();render()}}
@@ -881,6 +938,7 @@ function combo(e){
 function onKey(e){
   const c=combo(e);if(!c)return;
   if(ui.menu&&c==='Escape'){ui.menu=null;renderMain();return}
+  if(ui.exp&&c==='Escape'){ui.exp=null;renderMain();return}
   if(ui.rec){
     e.preventDefault();
     if(c==='Escape'){setRec(null);renderMain();return}
@@ -896,6 +954,16 @@ function onKey(e){
   const p=active().find(x=>x.key===c);
   if(p){e.preventDefault();ppProject(p.id)}
 }
+/* Mouse wheel over the week planner turns the week wheel one week per notch (buttons still work). */
+let wheelAcc=0,wheelLock=0;
+document.addEventListener('wheel',e=>{
+  if(ui.tab!=='plan'||ui.view!=='week'||!e.target.closest('#wheel')||e.target.closest('.cexp,.addf,textarea'))return;
+  e.preventDefault();
+  if(Date.now()<wheelLock)return;
+  wheelAcc+=e.deltaY;
+  if(Math.abs(wheelAcc)<60)return;
+  ui.wk+=wheelAcc>0?1:-1;wheelAcc=0;wheelLock=Date.now()+350;ui.menu=null;ui.exp=null;renderMain();
+},{passive:false});
 document.addEventListener('click',onClick);
 document.addEventListener('change',onChange);
 document.addEventListener('keydown',onKey);
@@ -906,6 +974,11 @@ document.addEventListener('input',e=>{
 document.addEventListener('submit',e=>{
   e.preventDefault();
   if(e.target.id==='addf')commitAdd();
+  else if(e.target.classList.contains('cx-taskf')){
+    const it=planItem(e.target.dataset.d,e.target.dataset.p),v=e.target.querySelector('input').value.trim();if(!it||!v)return;
+    (it.tasks=it.tasks||[]).push({id:uid(),t:v,done:false});save();renderMain();
+    document.querySelector('.cx-taskf input')?.focus();
+  }
   else if(e.target.classList.contains('taskf')){
     const p=proj(e.target.dataset.p),inp=e.target.querySelector('input'),v=inp.value.trim();if(!p||!v)return;
     (p.tasks=p.tasks||[]).push({id:uid(),t:v,done:false});save();renderMain();
