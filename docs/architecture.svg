@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="745" viewBox="0 0 960 745" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#24272B"/>
+    </marker>
+  </defs>
+  <rect width="960" height="745" fill="#F1EADB"/>
+
+  <text x="40" y="44" font-size="20" font-weight="700" fill="#24272B">Collaba Projects — how it is built</text>
+  <text x="40" y="66" font-size="12.5" fill="#5B6876">One planner page, three ways to run it. The desktop shell adds what a browser can't: a file on disk, a taskbar strip, tray and hotkeys.</text>
+
+  <!-- shared UI -->
+  <rect x="300" y="88" width="360" height="92" rx="6" fill="#2A3AAB"/>
+  <text x="480" y="114" text-anchor="middle" font-size="15" font-weight="700" fill="#F6F0E3">tydzen.html — the planner (one file)</text>
+  <text x="480" y="136" text-anchor="middle" font-size="12" fill="#F6F0E3">State: projects · day plan (project + hours) · time entries · timer</text>
+  <text x="480" y="154" text-anchor="middle" font-size="12" fill="#F6F0E3">Views: weekly / monthly planner · projects · time reports</text>
+  <text x="480" y="170" text-anchor="middle" font-size="12" fill="#F6F0E3">Daily hour goals with an alert when a goal is reached</text>
+
+  <!-- three hosts -->
+  <g font-size="12" fill="#24272B">
+    <rect x="40" y="220" width="260" height="70" rx="6" fill="#F6F0E3" stroke="#24272B"/>
+    <text x="170" y="245" text-anchor="middle" font-weight="700" font-size="13.5">Browser</text>
+    <text x="170" y="266" text-anchor="middle">used to test every change first</text>
+    <text x="170" y="282" text-anchor="middle" fill="#5B6876">data → localStorage</text>
+
+    <rect x="350" y="220" width="260" height="70" rx="6" fill="#F6F0E3" stroke="#24272B"/>
+    <text x="480" y="245" text-anchor="middle" font-weight="700" font-size="13.5">Claude artifact</text>
+    <text x="480" y="266" text-anchor="middle">early prototype, shared online</text>
+    <text x="480" y="282" text-anchor="middle" fill="#5B6876">data → artifact database</text>
+
+    <rect x="660" y="220" width="260" height="70" rx="6" fill="#E0A030"/>
+    <text x="790" y="245" text-anchor="middle" font-weight="700" font-size="13.5">Windows desktop app</text>
+    <text x="790" y="266" text-anchor="middle">Electron shell, portable .exe</text>
+    <text x="790" y="282" text-anchor="middle">data → file on disk</text>
+  </g>
+  <g stroke="#24272B" stroke-width="1.4" fill="none" marker-end="url(#a)">
+    <path d="M380 180 L170 218"/>
+    <path d="M480 180 L480 218"/>
+    <path d="M580 180 L790 218"/>
+  </g>
+
+  <!-- desktop detail -->
+  <rect x="40" y="318" width="880" height="342" rx="8" fill="none" stroke="#E0A030" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="58" y="342" font-size="12" font-weight="700" fill="#8C6A3F" letter-spacing="1">INSIDE THE DESKTOP APP</text>
+
+  <g font-size="12" fill="#24272B">
+    <rect x="62" y="360" width="250" height="96" rx="6" fill="#F6F0E3" stroke="#24272B"/>
+    <text x="78" y="384" font-weight="700" font-size="13.5">Planner window</text>
+    <text x="78" y="404">the same tydzen.html</text>
+    <text x="78" y="421">saves on every change</text>
+    <text x="78" y="438">keeps a mirror copy inside the app</text>
+
+    <rect x="62" y="500" width="250" height="118" rx="6" fill="#F6F0E3" stroke="#24272B"/>
+    <text x="78" y="524" font-weight="700" font-size="13.5">preload.js — bridge</text>
+    <text x="78" y="544">writes data.json itself, at once</text>
+    <text x="78" y="561">(temp file → rename, never half-written)</text>
+    <text x="78" y="578">unreadable file → newest backup</text>
+    <text x="78" y="595">saving never waits for the main process</text>
+
+    <rect x="356" y="360" width="268" height="258" rx="6" fill="#24272B"/>
+    <g fill="#F6F0E3">
+      <text x="372" y="384" font-weight="700" font-size="13.5">main.js — main process</text>
+      <text x="372" y="408">• writes a second copy of data.json</text>
+      <text x="372" y="426">• one backup per day, keeps 30</text>
+      <text x="372" y="444">• failed write: logged, retried in 3 s,</text>
+      <text x="384" y="460">reported to the planner</text>
+      <text x="372" y="480">• global hotkeys (work in any program)</text>
+      <text x="372" y="498">• tray: dot in the running project's colour</text>
+      <text x="372" y="516">• autostart with Windows</text>
+      <text x="372" y="534">• closing the window only hides it;</text>
+      <text x="384" y="550">timer and strip keep running</text>
+      <text x="372" y="570">• crashed window → reloaded from disk</text>
+      <text x="372" y="590">• single instance only</text>
+    </g>
+
+    <rect x="668" y="360" width="232" height="80" rx="6" fill="#F6F0E3" stroke="#24272B"/>
+    <text x="684" y="384" font-weight="700" font-size="13.5">Taskbar strip · bar.html</text>
+    <text x="684" y="404">always-on-top window on the</text>
+    <text x="684" y="421">taskbar: project, timer, ▶ ❚❚ ■</text>
+
+    <rect x="668" y="458" width="232" height="56" rx="6" fill="#F6F0E3" stroke="#24272B"/>
+    <text x="684" y="482" font-weight="700" font-size="13.5">Tray menu · hotkeys</text>
+    <text x="684" y="501">switch project, pause, stop</text>
+
+    <rect x="668" y="532" width="232" height="86" rx="6" fill="#2E6476"/>
+    <g fill="#F6F0E3">
+      <text x="684" y="556" font-weight="700" font-size="13.5">data/ folder (not in git)</text>
+      <text x="684" y="576">data.json · backups/ (30 days)</text>
+      <text x="684" y="593">settings.json · app.log · error.log</text>
+      <text x="684" y="610">next to the program, easy to open</text>
+    </g>
+  </g>
+
+  <g stroke="#24272B" stroke-width="1.4" fill="none">
+    <path d="M187 456 L187 498" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M312 395 L354 395" marker-end="url(#a)"/>
+    <path d="M354 425 L314 425" marker-end="url(#a)"/>
+    <path d="M624 400 L666 400" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M624 486 L666 486" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M624 580 L666 580" marker-end="url(#a)"/>
+    <path d="M187 618 L187 636 L784 636 L784 622" marker-end="url(#a)"/>
+  </g>
+  <g font-size="10.5" fill="#5B6876">
+    <text x="318" y="389">save</text>
+    <text x="320" y="440">cmd</text>
+    <text x="630" y="393">state</text><text x="630" y="415">cmd</text>
+    <text x="628" y="479">cmd</text>
+    <text x="630" y="562">2nd</text><text x="630" y="574">copy</text>
+    <text x="196" y="482">sync</text>
+    <text x="400" y="652">1st copy: data.json, written by the window</text>
+  </g>
+
+  <text x="40" y="694" font-size="12" fill="#24272B"><tspan font-weight="700">Rule:</tspan> the planner page is the only UI. Strip, tray and hotkeys send commands to it; it changes the state, saves, and the main process</text>
+  <text x="40" y="712" font-size="12" fill="#24272B">pushes the new state back to the strip and tray. On start, the newer of the file and the in-app mirror wins (timestamp u).</text>
+  <text x="40" y="730" font-size="12" fill="#24272B">build.js packs the Electron runtime and the same tydzen.html into a portable folder with CollabaProjects.exe — no installer.</text>
+</svg>
