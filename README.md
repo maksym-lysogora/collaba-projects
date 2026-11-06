@@ -4,7 +4,7 @@
 
 <p align="center">A small Windows time tracker and project planner, styled like a drafting desk.<br>Plan the year and the week, run a timer without switching windows, and see where the hours went.</p>
 
-<p align="center"><a href="#run-it"><b>Run it</b></a> · <a href="#українською">Українською</a></p>
+<p align="center"><a href="https://github.com/maksym-lysogora/collaba-projects/releases/latest"><b>Download for Windows</b></a> · <a href="#run-from-source">Run from source</a> · <a href="#українською">Українською</a></p>
 
 ![Weekly planner](docs/planner.jpg)
 
@@ -29,7 +29,17 @@ Designed by Maksym Lysogora (product idea, UX, visual style, testing). Built wit
 
 ![Dark theme](docs/dark-theme.jpg)
 
-## Run it
+## Download
+
+Get the portable build from [Releases](https://github.com/maksym-lysogora/collaba-projects/releases/latest), unzip it anywhere and run `CollabaProjects.exe`. There is no installer. Windows only.
+
+The program is not code-signed, so Windows SmartScreen may warn you the first time. Choose "More info", then "Run anyway", or build it yourself from the source below.
+
+Closing the window only hides it, so the timer keeps running. To quit, use the icon next to the clock. "Запускати з Windows" in the header turns on autostart; it is off by default.
+
+**Your data** is in `%APPDATA%\CollabaProjects`: `data.json` plus one backup per day, kept for 30 days. When you run the program from a clone of this repository, it uses the `data/` folder there instead, which git ignores. Updating the program does not touch your data.
+
+## Run from source
 
 You need Windows and [Node.js](https://nodejs.org/).
 
@@ -40,11 +50,7 @@ npm start          # run from source
 npm run build      # portable app in ../dist/CollabaProjects-win32-x64
 ```
 
-The build is a folder with `CollabaProjects.exe`; there is no installer. To try only the planner, open `tydzen.html` in a browser. It starts with demo data and keeps everything in that browser. The taskbar strip, hotkey and automatic tracking need the desktop app.
-
-Closing the window only hides it, so the timer keeps running. To quit, use the icon next to the clock. "Запускати з Windows" in the header turns on autostart; it is off by default.
-
-**Your data** is in the `data/` folder of this repository, which git ignores: `data.json` plus one backup per day, kept for 30 days. If you move the built program somewhere else, it uses `%APPDATA%\CollabaProjects` instead. Rebuilding does not touch your data.
+To try only the planner, open `tydzen.html` in a browser. It starts with demo data and keeps everything in that browser. The taskbar strip, hotkey and automatic tracking need the desktop app.
 
 ## How it is built
 
@@ -61,7 +67,7 @@ Changes are listed in [PATCHNOTES.md](PATCHNOTES.md) (in Ukrainian).
 
 Невеликий трекер часу й планувальник проєктів для Windows: планер на тиждень і місяць, річний календар із дедлайнами, таймер на панелі задач, автоматичне відстеження за назвою активного вікна, звіти по годинах. Без акаунта й підписки: дані лежать у звичайному файлі на вашому комп'ютері й нікуди не надсилаються.
 
-Щоб запустити, потрібні Windows і Node.js: команди наведено в розділі [Run it](#run-it).
+[Завантажте програму](https://github.com/maksym-lysogora/collaba-projects/releases/latest), розпакуйте архів і запустіть `CollabaProjects.exe`. Встановлення не потрібне. Програма не має цифрового підпису, тож Windows може показати попередження: натисніть «Докладніше», потім «Виконати в будь-якому разі».
 
 ## License
 
