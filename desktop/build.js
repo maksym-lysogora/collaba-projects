@@ -11,7 +11,7 @@ const runtime = path.join(__dirname, 'node_modules', 'electron', 'dist');
 const out = path.join(root, 'dist', 'CollabaProjects-win32-x64');
 const exe = path.join(out, 'CollabaProjects.exe');
 const appDir = path.join(out, 'resources', 'app');
-const FILES = ['main.js', 'preload.js', 'datadir.js', 'bar.html'];
+const FILES = ['main.js', 'preload.js', 'datadir.js', 'bar.html', 'watch.ps1'];
 const ASSETS = ['icon.ico', 'tray.png', 'tray@2x.png'];
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 
@@ -29,8 +29,11 @@ for (const f of ASSETS) fs.copyFileSync(path.join(__dirname, 'assets', f), path.
 fs.copyFileSync(path.join(root, 'tydzen.html'), path.join(appDir, 'tydzen.html'));
 fs.writeFileSync(path.join(appDir, 'package.json'), JSON.stringify({ name: pkg.name, productName: pkg.productName, version: pkg.version, main: 'main.js' }, null, 2));
 
-// Logo and name inside the .exe (Explorer, taskbar, Alt+Tab).
-execFileSync(path.join(__dirname, 'node_modules', 'rcedit', 'bin', 'rcedit-x64.exe'), [exe,
+// Logo and name inside the .exe (Explorer, taskbar, Alt+Tab). Edited in a temp copy, then copied back: editing the
+// freshly copied exe in place sometimes fails with "Unable to commit changes" (file briefly held by the antivirus).
+const tmpExe = path.join(require('os').tmpdir(), 'collaba-rcedit.exe');
+fs.copyFileSync(exe, tmpExe);
+execFileSync(path.join(__dirname, 'node_modules', 'rcedit', 'bin', 'rcedit-x64.exe'), [tmpExe,
   '--set-icon', path.join(__dirname, 'assets', 'icon.ico'),
   '--set-file-version', pkg.version, '--set-product-version', pkg.version,
   '--set-version-string', 'FileDescription', pkg.productName,
@@ -38,4 +41,6 @@ execFileSync(path.join(__dirname, 'node_modules', 'rcedit', 'bin', 'rcedit-x64.e
   '--set-version-string', 'OriginalFilename', 'CollabaProjects.exe',
   '--set-version-string', 'CompanyName', 'Collaba',
 ]);
+fs.copyFileSync(tmpExe, exe);
+fs.rmSync(tmpExe, { force: true });
 console.log('Built:', out);

@@ -228,6 +228,10 @@ ipcMain.on('suspend-hotkeys', (e, v) => { hotkeysSuspended = !!v; updateHotkeys(
 ipcMain.on('toggle-bar', toggleBar);
 ipcMain.on('alert', (e, a) => send(bar, 'alert', a));
 ipcMain.on('open-data', () => shell.openPath(DATA_DIR));
+// Start with Windows (hidden: tray + taskbar strip only). Same setting as the tray menu checkbox.
+const LOGIN = { path: process.execPath, args: ['--hidden'] };
+ipcMain.on('autostart-get', e => { e.returnValue = app.getLoginItemSettings(LOGIN).openAtLogin; });
+ipcMain.on('autostart-set', (e, on) => { app.setLoginItemSettings({ ...LOGIN, openAtLogin: !!on }); updateTray(); logError('autostart', on ? 'on' : 'off'); });
 ipcMain.on('open-planner', showMain);
 ipcMain.on('bar-ready', () => send(bar, 'state', current));
 ipcMain.on('bar-cmd', (e, c) => cmd(c));
@@ -242,6 +246,58 @@ ipcMain.on('bar-menu', () => {
   ]).popup({ window: bar });
 });
 
+/* ---------- auto-tracking ----------
+   watch.ps1 reports the foreground window title, idle time and fullscreen state every 5 s (read-only, no screenshots).
+   - A project with "auto" on starts when its keyword has been in the foreground title for 20 s, and stops after
+     60 s without it. A timer the owner started by hand is never touched by keywords.
+   - Any running timer pauses after IDLE_MS without mouse/keyboard (the idle minutes are not counted) and when a
+     fullscreen game/app is in front; it resumes by itself when activity returns. */
+const { spawn } = require('child_process');
+const IDLE_MS = 5 * 60 * 1000, MATCH_MS = 20 * 1000, LOSE_MS = 60 * 1000;
+let watcher = null, matchP = null, matchSince = 0, lastMatch = 0;
+const keywordsOf = p => String(p.match || p.name || '').split(',').map(s => s.trim().toLowerCase()).filter(s => s.length >= 2);
+function onWatch(w) {
+  if (!current) return;
+  const t = current.timer, now = Date.now();
+  const full = w.q === 2 || w.q === 3 || w.q === 4;
+  const ownWindow = /^collabaprojects$/i.test(w.p || '');
+  // 1. idle or fullscreen: pause whatever runs; remember why, so it can resume by itself
+  if (t && t.s && (w.i >= IDLE_MS || (full && !ownWindow))) {
+    cmd({ act: 'auto-pause', at: w.i >= IDLE_MS ? now - w.i : now, why: w.i >= IDLE_MS ? 'idle' : 'fullscreen' });
+    return;
+  }
+  if (t && !t.s && t.autoPaused && w.i < 15000 && !full) cmd({ act: 'auto-resume' });
+  if (w.i >= IDLE_MS || full) return;
+  // 2. keyword matching for projects with auto-tracking on
+  const title = String(w.t || '').toLowerCase();
+  const hit = (current.projects || []).find(p => p.auto && !p.archived && keywordsOf(p).some(k => title.includes(k)));
+  if (hit) {
+    if (matchP !== hit.id) { matchP = hit.id; matchSince = now; }
+    lastMatch = now;
+    const manual = t && !t.auto;
+    if (!manual && (!t || t.p !== hit.id) && now - matchSince >= MATCH_MS) cmd({ act: 'auto-start', p: hit.id });
+  } else {
+    matchP = null;
+    if (t && t.auto && now - lastMatch >= LOSE_MS) cmd({ act: 'auto-stop' });
+  }
+}
+function startWatcher() {
+  // The script goes in as a -Command argument, so no execution-policy change is needed.
+  const script = fs.readFileSync(path.join(__dirname, 'watch.ps1'), 'utf8');
+  watcher = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true });
+  let buf = '';
+  watcher.stdout.setEncoding('utf8');
+  watcher.stdout.on('data', d => {
+    buf += d; let i;
+    while ((i = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+      if (line.startsWith('{')) { try { onWatch(JSON.parse(line)); } catch (e) { logError('watch-parse', e); } }
+    }
+  });
+  watcher.stderr.on('data', d => logError('watch', String(d).slice(0, 300)));
+  watcher.on('exit', code => { watcher = null; if (!quitting) { logError('watch', 'exited ' + code + ', restarting in 30 s'); setTimeout(startWatcher, 30000); } });
+}
+
 /* ---------- lifecycle ---------- */
 app.whenReady().then(() => {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -250,6 +306,7 @@ app.whenReady().then(() => {
   settings = readJson(SETTINGS_FILE) || {};
   createMain(!process.argv.includes('--hidden'));
   createBar();
+  startWatcher();
   tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
   tray.on('click', showMain);
   updateTray();
@@ -261,5 +318,5 @@ app.on('render-process-gone', (e, wc, details) => {
   logError('renderer-gone', details.reason);
   if (mainWin && !mainWin.isDestroyed() && wc === mainWin.webContents && !quitting) mainWin.loadFile(UI_FILE);
 });
-app.on('will-quit', () => globalShortcut.unregisterAll());
+app.on('will-quit', () => { globalShortcut.unregisterAll(); if (watcher) watcher.kill(); });
 app.on('window-all-closed', () => {});

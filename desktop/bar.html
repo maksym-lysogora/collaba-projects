@@ -11,7 +11,11 @@
 html,body{margin:0;height:100%;background:transparent;overflow:hidden;font-family:var(--font);color:var(--fg);user-select:none}
 .strip{height:100%;display:flex;align-items:center;gap:4px;padding:0 6px 0 0;border-radius:0;
   background:var(--bg);border:1px solid var(--line);border-left:8px solid var(--c)}
-.strip.run{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger);border-left-color:var(--c)}
+/* While a project runs the whole strip turns signal red, so it reads from across the screen. */
+.strip.run{--fg:#F4EEE2;--muted:#F4EEE2;background:#C8452D;border-color:#C8452D;border-left-color:var(--c);color:#F4EEE2}
+.strip.run .ic.stop,.strip.run .grip{color:#F4EEE2}
+.strip.run .name:hover,.strip.run .ic:hover{background:rgba(0,0,0,.15)}
+.strip.run .dot{box-shadow:0 0 0 2px #F4EEE2}
 .strip.pause{border-style:dashed;border-color:var(--c)}
 .strip.alert{animation:flash 1s ease-in-out infinite}
 @keyframes flash{50%{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}}

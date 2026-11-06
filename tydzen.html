@@ -380,7 +380,74 @@ html{scroll-snap-type:y mandatory}
 .wk{scroll-snap-align:start;scroll-margin-top:var(--snap,200px)}
 
 .wheel{padding-top:10px}
+.yadd{padding:0 6px}.yadd form{width:100%}.yadd input{width:100%;min-height:24px;padding:2px 8px;font-size:12.5px}
+.yrow-empty{cursor:default}
+.chip-new{border:1px dashed var(--line)!important;background:transparent!important;color:var(--fg)!important;cursor:pointer}
+.chip-new:hover{background:var(--raised)!important}
+/* ---- Max width (2026-11-04): everything centred within 2560 px; only the scrolling year planner runs edge to edge ---- */
+.top,#main{max-width:2560px;margin-inline:auto}
+.year{margin-inline:min(0px,calc(50% - 50vw + var(--gut)))}
+/* ---- Compact project list (2026-11-02): one thin row per project, column captions once on top ---- */
+.plist{margin-top:10px;gap:0}
+.phdr{display:flex;align-items:center;gap:10px;padding:0 10px 4px 40px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--line)}
+.phdr .sp{flex:1}
+.phdr span:not(.sp),.prow .stat{width:64px;text-align:right;flex:none}
+.phdr span.pacth{width:190px}
+.prow,:root[data-shape="sq"] .prow{margin:0;padding:3px 10px;gap:10px;background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--hair) 60%,transparent);border-radius:0;flex-wrap:nowrap}
+.prow:hover{background:color-mix(in srgb,var(--c) 7%,transparent)}
+.prow .pdot{width:14px;height:14px}
+.prow input.pn{flex:1 1 auto;min-height:28px;padding:2px 6px;font-size:14px}
+.prow .autof{font-size:12px}
+.prow .kw{flex:0 0 150px;min-height:26px;padding:2px 9px;font-size:12px}
+.prow .stat{display:block;font-family:var(--mono);font-size:12.5px;color:var(--fg)}
+.pact{width:190px;flex:none;display:flex;justify-content:flex-end;gap:2px}
+.lnk{border:0;background:none;padding:3px 7px;border-radius:4px;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.lnk:hover{background:var(--raised);color:var(--fg)}
+.lnk.danger:hover{color:var(--now)}
+.prow .pdet{flex-basis:100%}
+.prow:has(.pdet){flex-wrap:wrap}
+#newp{gap:8px}#newp input{min-height:32px}
+/* ---- Year planner (2026-11-02): rows of hand-drawn phases; the deadline day is the solid end cell ---- */
+.year{display:grid;grid-template-columns:210px minmax(0,1fr);border:1px solid var(--hair);border-radius:6px;background:var(--surface);overflow:hidden}
+.ynames{border-right:2px solid var(--line);background:var(--surface);z-index:2}
+.yhead-sp{height:46px;border-bottom:1px solid var(--hair)}
+.yname{height:30px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;font-weight:500;border-bottom:1px solid color-mix(in srgb,var(--hair) 50%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yscroll{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--line) 35%,transparent) transparent}
+.yscroll::-webkit-scrollbar{height:8px}
+.yscroll::-webkit-scrollbar-button{display:none;width:0;height:0}
+.yscroll::-webkit-scrollbar-track{background:transparent}
+.yscroll::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--line) 30%,transparent);border-radius:999px}
+.yscroll::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--line) 55%,transparent)}
+.ynav{width:34px;height:34px;border-radius:50%;border:0;background:transparent;font-size:24px;line-height:1;color:var(--muted);cursor:pointer}
+.ynav:hover{background:var(--raised);color:var(--fg)}
+.ylab{position:absolute;left:4px;right:20px;top:0;text-align:center;line-height:16px;font-size:10.5px;font-weight:600;color:var(--paper);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.ybar{cursor:grab;z-index:2}
+.yh{position:absolute;top:-3px;bottom:-3px;width:8px;cursor:ew-resize;z-index:2}
+.yh.l{left:-3px}.yh.r{right:-3px}
+.ybar:hover .yh{background:color-mix(in srgb,var(--c) 60%,transparent);border-radius:2px}
+body.yediting,body.yediting *{cursor:ew-resize!important;user-select:none}
+.yrow{transition:background .15s}
+body.dragging .yscroll .yrow{background:color-mix(in srgb,var(--sun) 6%,transparent)}
+.ygrid{position:relative}
+.yhead{position:relative;height:24px;border-bottom:1px solid var(--hair)}
+.ym{position:absolute;top:0;height:24px;line-height:24px;text-align:center;font-family:var(--display);font-size:13px;letter-spacing:.08em;text-transform:uppercase;border-left:1px solid var(--hair)}
+.ydays{position:relative;height:22px;border-bottom:1px solid var(--hair)}
+.yd{position:absolute;top:0;width:16px;height:22px;line-height:22px;text-align:center;font-family:var(--mono);font-size:8.5px;color:var(--muted)}
+.yd.we{color:var(--now);opacity:.7}
+.ybody{position:relative;background:repeating-linear-gradient(90deg,transparent 0 15px,color-mix(in srgb,var(--hair) 45%,transparent) 15px 16px)}
+.yline{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.5;pointer-events:none}
+.ytoday{position:absolute;top:0;bottom:0;width:2px;background:var(--now);pointer-events:none;z-index:1}
+.yrow{position:relative;height:30px;border-bottom:1px solid color-mix(in srgb,var(--hair) 50%,transparent);cursor:crosshair}
+.ybar{position:absolute;top:7px;height:16px;border-radius:2px;cursor:default;
+  background:color-mix(in srgb,var(--c) 82%,var(--paper));
+  box-shadow:inset -16px 0 0 color-mix(in srgb,var(--c) 75%,#000)}
+.ybar.ghost{opacity:.6;pointer-events:none}
+.ydel{position:absolute;right:-22px;top:-2px;width:20px;height:20px;border:0;border-radius:50%;background:var(--raised);color:var(--now);font-size:11px;display:none;cursor:pointer;padding:0}
+.ybar:hover .ydel{display:grid;place-items:center}
 /* ---- Round 3 (2026-10-23) ---- */
+.autof{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.autof input{accent-color:var(--c);width:16px;height:16px}
+.prow .kw{flex:0 1 220px;min-width:120px;font-size:13px;min-height:30px;padding:4px 10px}
 /* the unfolded card panel floats over neighbours at a usable width */
 .card.open .cexp{position:absolute;left:-6px;top:calc(100% + 6px);width:320px;z-index:6;margin:0;box-shadow:0 14px 34px -10px rgba(0,0,0,.35)}
 .week .day:nth-child(n+5) .card.open .cexp{left:auto;right:-6px}
@@ -477,9 +544,9 @@ const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes()
 /* ---------- state ---------- */
 function seed(){
   const mon=mondayOf(new Date()),now=new Date();
-  const P=[{id:'p1',name:'Візуалізація інтер’єру (приклад)',color:COLORS[0],key:'Alt+Digit1'},
-           {id:'p2',name:'Сайт-портфоліо (приклад)',color:COLORS[2],key:'Alt+Digit2'},
-           {id:'p3',name:'Навчання (приклад)',color:COLORS[1],key:'Alt+Digit3'}];
+  const P=[{id:'p1',name:'Візуалізація інтер’єру (приклад)',color:COLORS[0]},
+           {id:'p2',name:'Сайт-портфоліо (приклад)',color:COLORS[2]},
+           {id:'p3',name:'Навчання (приклад)',color:COLORS[1]}];
   const plan={},entries=[];
   const pat=[['p1','p3'],['p1'],['p2','p3'],['p1','p2'],['p2'],[],[]];
   for(let w=-2;w<=0;w++)if(w!==-1)pat.forEach((ps,i)=>{plan[dk(addDays(mon,i+w*7))]=ps.map((p,j)=>({p,h:j?2:3}))});
@@ -488,11 +555,11 @@ function seed(){
   for(let w=-2;w<=0;w++){if(w===-1)continue;
     for(let i=0;i<5&&(w<0||i<today);i++){const d=addDays(mon,i+w*7);
       pat[i].forEach((p,j)=>entries.push({id:uid(),p,s:t(d,j?14:10,0),e:t(d,j?15:12,j?30:15),n:''}))}}
-  return {projects:P,plan,entries,timer:null,keys:{pause:'Alt+KeyP',stop:'Alt+KeyS'},demo:true,u:0};
+  return {projects:P,plan,entries,timer:null,keys:{pause:'Ctrl+Alt+Shift+KeyP',stop:null},demo:true,u:0};
 }
 function normalize(s){
   s.projects=s.projects||[];s.plan=s.plan||{};s.entries=s.entries||[];
-  s.keys=s.keys||{pause:'Alt+KeyP',stop:'Alt+KeyS'};
+  s.keys=s.keys||{pause:'Ctrl+Alt+Shift+KeyP',stop:null};
   s.projects.forEach(p=>{for(const pal of OLD_PALETTES){const i=pal.indexOf(String(p.color).toLowerCase());if(i>=0)p.color=COLORS[i]}});
   if(s.timer&&s.timer.acc===undefined)s.timer.acc=0;
   for(const k in s.plan)s.plan[k]=(s.plan[k]||[]).map(x=>typeof x==='string'?{p:x,h:0}:x);
@@ -580,9 +647,9 @@ let toastT;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,4500)}
 
 /* ---------- timer: start, pause, resume, stop ---------- */
-function closeSegment(){
+function closeSegment(at){
   const t=state.timer;if(!t||!t.s)return;
-  const e=Date.now();
+  const e=Math.max(t.s,Math.min(Date.now(),at||Date.now())); // "at": end earlier, e.g. when the mouse went still
   if(e-t.s>=1000)state.entries.push({id:uid(),p:t.p,s:t.s,e,n:t.n||''});
   t.acc=(t.acc||0)+(e-t.s);t.s=null;
 }
@@ -592,8 +659,8 @@ function startTimer(p){
   state.timer={p,s:Date.now(),acc:0,n:state.timer&&state.timer.p===p?state.timer.n:ui.note.trim()};
   state.lastP=p;ui.tp=p;ui.note='';save();render();
 }
-function pauseTimer(){if(state.timer&&state.timer.s){closeSegment();save();render()}}
-function resumeTimer(){if(state.timer&&!state.timer.s){state.timer.s=Date.now();save();render()}}
+function pauseTimer(){if(state.timer&&state.timer.s){closeSegment();delete state.timer.autoPaused;save();render()}}
+function resumeTimer(){if(state.timer&&!state.timer.s){state.timer.s=Date.now();delete state.timer.autoPaused;save();render()}}
 function stopTimer(){if(!state.timer)return;closeSegment();state.timer=null;save();render()}
 function pauseToggle(){const t=state.timer;if(!t){startTimer(ui.tp);return}t.s?pauseTimer():resumeTimer()}
 function ppProject(id){const t=state.timer;if(t&&t.p===id)t.s?pauseTimer():resumeTimer();else startTimer(id)}
@@ -679,6 +746,12 @@ function renderMain(){
   document.documentElement.style.setProperty('--toph',(document.querySelector('.top')?.offsetHeight||0)+'px');
   requestAnimationFrame(()=>document.documentElement.style.setProperty('--snap',((document.querySelector('.top')?.offsetHeight||0)+(document.querySelector('.pbar')?.offsetHeight||0)+14)+'px'));
   requestAnimationFrame(placeFrame);
+  // Year view: keep the horizontal position across re-renders; first time, open a month before today.
+  const ys=document.getElementById('yscroll');
+  if(ys){
+    if(ui.ysl==null||ui.scrollWeek){const ti=dayIdx(ui.yr||new Date().getFullYear(),todayK());ui.ysl=Math.max(0,(ti-30)*YW);ui.scrollWeek=false}
+    ys.scrollLeft=ui.ysl;ys.addEventListener('scroll',()=>{ui.ysl=ys.scrollLeft},{passive:true});
+  }
   if(ui.tab==='plan'&&ui.view==='week'&&ui.scrollWeek){ui.scrollWeek=false;requestAnimationFrame(()=>scrollToWeek(ui.wk,false))}
 }
 
@@ -737,10 +810,9 @@ function menuList(k){
 }
 function createProject(name){
   state.demo=false;
-  const used=new Set(state.projects.map(p=>p.key));
-  let key=null;for(let i=1;i<=9;i++)if(!used.has('Alt+Digit'+i)){key='Alt+Digit'+i;break}
+  // No per-project global hotkey any more: Alt+1…9 grabbed system-wide clashed with other programs.
   const color=ui.newColor,id=uid();
-  state.projects.push({id,name,color,key});
+  state.projects.push({id,name,color});
   ui.newColor=COLORS[(COLORS.indexOf(color)+1)%COLORS.length];
   return id;
 }
@@ -799,12 +871,93 @@ function commitAdd(){
   ui.menu=null;save();render();
 }
 function tray(){
-  return `<div class="tray">${active().length?`<span>Перетягніть на день:</span>`+active().map(p=>`<span class="chip" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from=""><span class="dot"></span>${esc(p.name)}</span>`).join(''):'Додайте проєкти на вкладці «Проєкти», потім розкладіть їх по днях.'}</div>`;
+  return `<div class="tray">${active().length?`<span>Перетягніть на день:</span>`+active().map(p=>`<span class="chip" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from=""><span class="dot"></span>${esc(p.name)}</span>`).join(''):'<span>Проєктів ще немає.</span>'}<button class="chip chip-new" data-act="yadd" title="Створити новий проєкт">+ Новий проєкт</button></div>`;
 }
 function viewPlan(){
   const seg=`<div class="seg" role="group" aria-label="Вигляд"><button data-act="view" data-v="week" aria-pressed="${ui.view==='week'}">Тиждень</button><button data-act="view" data-v="month" aria-pressed="${ui.view==='month'}">Місяць</button></div>`;
   return ui.view==='month'?viewMonth(seg):viewWeek(seg);
 }
+/* Year planner: all twelve months in one horizontal strip, one row per project. Bars are planned phases
+   (start → deadline) that the owner draws by hand; they are not computed from tracked time.
+   Stored per project as p.phases=[{s:'YYYY-MM-DD',e:'YYYY-MM-DD'}]. */
+const YW=16;                                   // px per day
+function yearDays(y){const a=new Date(y,0,1),n=Math.round((new Date(y+1,0,1)-a)/864e5);return {a,n}}
+const dayIdx=(y,k)=>Math.round((parseDk(k)-new Date(y,0,1))/864e5);
+function viewYear(seg=''){
+  const y=ui.yr||new Date().getFullYear(),{a,n}=yearDays(y),W=n*YW;
+  let months='',days='',lines='';
+  for(let m=0;m<12;m++){
+    const s=dayIdx(y,dk(new Date(y,m,1))),e=dayIdx(y,dk(new Date(y,m+1,1)));
+    months+=`<div class="ym" style="left:${s*YW}px;width:${(e-s)*YW}px">${MON[m]}</div>`;
+    if(m)lines+=`<i class="yline" style="left:${s*YW}px"></i>`;
+  }
+  for(let i=0;i<n;i++){const d=addDays(a,i),we=d.getDay()===0||d.getDay()===6;days+=`<span class="yd ${we?'we':''}" style="left:${i*YW}px">${d.getDate()}</span>`}
+  const tk=todayK(),ti=tk.startsWith(y+'-')?dayIdx(y,tk):-1;
+  const ps=active();
+  const rows=ps.map(p=>{
+    const bars=(p.phases||[]).map((ph,j)=>{
+      const s=Math.max(0,dayIdx(y,ph.s)),e=Math.min(n-1,dayIdx(y,ph.e));if(e<0||s>n-1||e<s)return '';
+      return `<div class="ybar" data-p="${p.id}" data-i="${j}" style="left:${s*YW}px;width:${(e-s+1)*YW}px" title="${esc(p.name)}: ${ph.s} → ${ph.e} (дедлайн)">
+        <span class="ylab">${esc(p.name)}</span>
+        <i class="yh l" data-edge="s" title="Потягніть, щоб змінити початок"></i><i class="yh r" data-edge="e" title="Потягніть, щоб змінити дедлайн"></i>
+        <button class="ydel" data-act="ydel" data-p="${p.id}" data-i="${j}" title="Видалити цей етап" aria-label="Видалити етап">✕</button></div>`;
+    }).join('');
+    return `<div class="yrow" style="--c:${p.color}" data-yp="${p.id}">${bars}</div>`;
+  }).join('');
+  const names=ps.map(p=>`<div class="yname" style="--c:${p.color}"><span class="dot"></span>${esc(p.name)}</div>`).join('');
+  return `<div class="pbar"><div class="phead"><button class="ynav" data-act="ynav" data-n="-1" aria-label="Попередній рік">‹</button><h2 style="min-width:0;margin:0 4px">${y}</h2><button class="ynav" data-act="ynav" data-n="1" aria-label="Наступний рік">›</button>
+      <span class="sp"></span><span class="dtot">Перетягніть проєкт на календар або протягніть мишею по його рядку · краї смуги тягнуться · ✕ — видалити</span>${seg}</div>${tray()}</div>
+    <div class="year">
+      <div class="ynames"><div class="yhead-sp"></div>${names}
+        <div class="yname yadd">${ui.yadd?`<form id="yaddf"><input type="text" id="yaddn" placeholder="Назва нового проєкту" maxlength="80" autocomplete="off"></form>`:`<button class="lnk" data-act="yadd">+ Додати рядок</button>`}</div></div>
+      <div class="yscroll" id="yscroll"><div class="ygrid" style="width:${W}px">
+        <div class="yhead">${months}</div><div class="ydays">${days}</div>
+        <div class="ybody">${lines}${ti>=0?`<i class="ytoday" style="left:${ti*YW+YW/2}px"></i>`:''}${rows}<div class="yrow yrow-empty"></div></div>
+      </div></div>
+    </div>`;
+}
+/* Year bars by hand: drag a bar's edge to move its start or deadline, drag its middle to move it whole. */
+let yedit=null;
+document.addEventListener('mousedown',e=>{
+  const bar=e.target.closest('.ybar[data-p]');if(!bar||e.button!==0||e.target.closest('.ydel'))return;
+  const p=proj(bar.dataset.p),ph=p&&p.phases&&p.phases[Number(bar.dataset.i)];if(!ph)return;
+  const y=ui.yr||new Date().getFullYear(),h=e.target.closest('.yh');
+  yedit={bar,ph,mode:h?h.dataset.edge:'move',x0:e.clientX,s0:dayIdx(y,ph.s),e0:dayIdx(y,ph.e),y};
+  document.body.classList.add('yediting');e.preventDefault();e.stopPropagation();
+},true);
+document.addEventListener('mousemove',e=>{
+  if(!yedit)return;const d=Math.round((e.clientX-yedit.x0)/YW);let s=yedit.s0,en=yedit.e0;
+  if(yedit.mode==='s')s=Math.min(en,s+d);else if(yedit.mode==='e')en=Math.max(s,en+d);else{s+=d;en+=d}
+  yedit.s=s;yedit.e=en;yedit.bar.style.left=s*YW+'px';yedit.bar.style.width=(en-s+1)*YW+'px';
+});
+document.addEventListener('mouseup',()=>{
+  if(!yedit)return;const {ph,s,e,y}=yedit;yedit=null;document.body.classList.remove('yediting');
+  if(s==null){return}
+  const a=new Date(y,0,1);ph.s=dk(addDays(a,s));ph.e=dk(addDays(a,e));save();renderMain();
+});
+/* Mouse wheel over the year scrolls it sideways. */
+document.addEventListener('wheel',e=>{
+  const ys=e.target.closest('#yscroll');if(!ys||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;
+  e.preventDefault();ys.scrollLeft+=e.deltaY*1.2;
+},{passive:false});
+/* Drawing a phase: press on an empty part of a row, drag to the deadline, release. */
+let ydrag=null;
+document.addEventListener('mousedown',e=>{
+  const row=e.target.closest('.yrow');if(!row||e.target.closest('.ybar')||e.button!==0)return;
+  const r=row.getBoundingClientRect(),i=Math.floor((e.clientX-r.left)/YW);
+  const ghost=document.createElement('div');ghost.className='ybar ghost';row.append(ghost);
+  ydrag={row,r,i0:i,i1:i,ghost};paintGhost();e.preventDefault();
+});
+function paintGhost(){const s=Math.min(ydrag.i0,ydrag.i1),e=Math.max(ydrag.i0,ydrag.i1);ydrag.ghost.style.left=s*YW+'px';ydrag.ghost.style.width=(e-s+1)*YW+'px'}
+document.addEventListener('mousemove',e=>{if(!ydrag)return;ydrag.i1=Math.max(0,Math.floor((e.clientX-ydrag.r.left)/YW));paintGhost()});
+document.addEventListener('mouseup',()=>{
+  if(!ydrag)return;const {row,i0,i1}=ydrag;ydrag=null;
+  const p=proj(row.dataset.yp),y=ui.yr||new Date().getFullYear(),a=new Date(y,0,1);
+  if(!p){renderMain();return}
+  const s=Math.min(i0,i1),e=Math.max(i0,i1);
+  (p.phases=p.phases||[]).push({s:dk(addDays(a,s)),e:dk(addDays(a,e))});
+  p.phases.sort((x,z)=>x.s<z.s?-1:1);save();renderMain();
+});
 function nav(seg,title,extra){
   return `<div class="phead"><h2>${title}</h2>
     <button class="btn sm" data-act="nav" data-n="-1" aria-label="Назад">←</button>
@@ -943,20 +1096,24 @@ function viewProjects(){
   const wk=mondayOf(new Date()).getTime(),wkE=addDays(new Date(wk),7).getTime();
   const all=totals(0,9e15),week=totals(wk,wkE),todayK=dk(new Date());
   const list=[...state.projects].sort((a,b)=>(a.archived?1:0)-(b.archived?1:0));
-  return `<div class="stack3"><div class="panel"><h3>Новий проєкт</h3>
+  // The year planner heads the Projects tab: start and deadline belong to the project, not to daily planning.
+  return viewYear()+`<div class="stack3" style="margin-top:22px"><div class="panel"><h3>Новий проєкт</h3>
     <form id="newp" class="row"><input type="text" id="np" class="grow" placeholder="Назва проєкту" maxlength="80" autocomplete="off">
     <div class="swatches" role="group" aria-label="Колір">${COLORS.map(c=>`<button type="button" class="sw" style="--c:${c}" data-act="color" data-c="${c}" aria-pressed="${c===ui.newColor}" aria-label="Колір ${c}"></button>`).join('')}</div>
     <button class="btn primary" type="submit">Додати</button></form>
-    <div class="plist">${list.map(p=>{
+    <div class="plist"><div class="phdr"><span class="sp">Проєкт</span><span>Тиждень</span><span>Всього</span><span>Днів</span><span class="pacth"></span></div>${list.map(p=>{
       const days=Object.entries(state.plan).filter(([k,v])=>k>=todayK&&v.some(x=>x.p===p.id)).length;
       return `<div class="prow ${p.archived?'arch':''}" style="--c:${p.color}"><button class="pdot" data-act="palette" data-p="${p.id}" title="Змінити колір" aria-label="Змінити колір"></button>
       <input type="text" class="pn" data-edit="${p.id}" value="${esc(p.name)}" aria-label="Назва проєкту">
-      <div class="stat num"><b>${fmt(week[p.id]||0)}</b>цей тиждень</div>
-      <div class="stat num"><b>${fmt(all[p.id]||0)}</b>всього</div>
-      <div class="stat num"><b>${days}</b>днів у плані</div>
-      <button class="btn sm" data-act="archive" data-p="${p.id}">${p.archived?'Повернути':'В архів'}</button>
-      <button class="btn sm" data-act="pdetail" data-p="${p.id}" aria-expanded="${!!ui.open[p.id]}">${ui.open[p.id]?'▾':'▸'} Нотатки й підзадачі${taskCount(p)}</button>
-      <button class="btn sm danger" data-act="del" data-p="${p.id}">${ui.confirm===p.id?'Точно видалити?':'Видалити'}</button>
+      <label class="autof" title="Сам вмикати таймер, коли на екрані відкрите вікно з цим словом у назві (файл, папка, документ)"><input type="checkbox" data-auto="${p.id}" ${p.auto?'checked':''}> Авто</label>
+      ${p.auto?`<input type="text" class="kw" data-match="${p.id}" value="${esc(p.match||p.name)}" placeholder="Слова в назві вікна, через кому" title="Слова в назві вікна чи файлу, через кому" aria-label="Слова для автовідстеження">`:''}
+      <span class="stat num" title="Цей тиждень">${fmtS(week[p.id]||0)}</span>
+      <span class="stat num" title="Всього">${fmtS(all[p.id]||0)}</span>
+      <span class="stat num" title="Днів у плані">${days}</span>
+      <span class="pact">
+      <button class="lnk" data-act="pdetail" data-p="${p.id}" aria-expanded="${!!ui.open[p.id]}">${ui.open[p.id]?'▾':'▸'} Нотатки${taskCount(p)}</button>
+      <button class="lnk" data-act="archive" data-p="${p.id}">${p.archived?'Повернути':'Архів'}</button>
+      <button class="lnk danger" data-act="del" data-p="${p.id}" title="Видалити проєкт">${ui.confirm===p.id?'Точно видалити?':'✕'}</button></span>
       ${ui.open[p.id]?projDetail(p):''}</div>`}).join('')||'<div class="empty">Проєктів ще немає.</div>'}</div></div>
     <div style="display:flex;flex-direction:column;gap:14px">
     <div class="panel"><h3>Резервна копія</h3>
@@ -1106,6 +1263,10 @@ function onClick(e){
   else if(a==='tdel'){const p=proj(d.p);p.tasks=(p.tasks||[]).filter(x=>x.id!==d.id);save();renderMain()}
   else if(a==='pcolor'){const p=proj(d.p);if(p){p.color=d.c;save();render()}}
   else if(a==='palette'){openPalette(t,d.p)}
+  // New project from the year planner (row button or "+ Новий проєкт" tag): opens a name field in the year's names column.
+  else if(a==='yadd'){ui.tab='projects';ui.yadd=true;saveUi();renderMain();$('#yaddn')?.focus()}
+  else if(a==='ynav'){ui.yr=(ui.yr||new Date().getFullYear())+Number(d.n);ui.ysl=0;renderMain()}
+  else if(a==='ydel'){const p=proj(d.p);if(p&&p.phases){p.phases.splice(Number(d.i),1);save();renderMain()}}
   else if(a==='palpick'){const p=proj(d.p);closePalette();if(p){p.color=d.c;save();render()}}
   else if(a==='color'){ui.newColor=d.c;document.querySelectorAll('#newp .sw').forEach(s=>s.setAttribute('aria-pressed',s.dataset.c===d.c))}
   else if(a==='archive'){const p=proj(d.p);p.archived=!p.archived;save();render()}
@@ -1139,6 +1300,9 @@ function onChange(e){
   else if(t.dataset.note){const p=proj(t.dataset.note);if(p){p.note=t.value;save()}}
   else if(t.dataset.task){const p=proj(t.dataset.p),k=(p.tasks||[]).find(x=>x.id===t.dataset.task);if(k){k.done=t.checked;save();renderMain()}}
   else if(t.dataset.color){const p=proj(t.dataset.color);if(p){p.color=t.value;save();render()}}
+  else if(t.id==='autostart'){HOST?.autostartSet(t.checked);toast(t.checked?'Програма запускатиметься разом із Windows.':'Автозапуск з Windows вимкнено.')}
+  else if(t.dataset.auto){const p=proj(t.dataset.auto);if(p){p.auto=t.checked;if(p.auto&&!p.match)p.match=p.name;save();renderMain()}}
+  else if(t.dataset.match){const p=proj(t.dataset.match);if(p){p.match=t.value.trim()||p.name;save()}}
   else if(t.dataset.edit){const p=proj(t.dataset.edit);const v=t.value.trim();if(v){p.name=v;save();render()}else t.value=p.name}
 }
 function combo(e){
@@ -1178,6 +1342,7 @@ document.addEventListener('input',e=>{
 document.addEventListener('submit',e=>{
   e.preventDefault();
   if(e.target.id==='addf')commitAdd();
+  else if(e.target.id==='yaddf'){const v=$('#yaddn').value.trim();ui.yadd=false;if(v){createProject(v);save()}render()}
   else if(e.target.classList.contains('cx-taskf')){
     const it=planItem(e.target.dataset.d,e.target.dataset.p),v=e.target.querySelector('input').value.trim();if(!it||!v)return;
     (it.tasks=it.tasks||[]).push({id:uid(),t:v,done:false});save();renderMain();
@@ -1209,6 +1374,17 @@ document.addEventListener('dragstart',e=>{
   // Weeks outside the frame ignore the mouse; while dragging they must accept a drop too.
   document.body.classList.add('dragging');
 });
+/* A project tag dropped on the year becomes a one-week phase starting on the drop day, in that project's own row. */
+document.addEventListener('dragover',e=>{if(e.target.closest('#yscroll'))e.preventDefault()});
+document.addEventListener('drop',e=>{
+  const ys=e.target.closest('#yscroll');if(!ys)return;e.preventDefault();
+  let o;try{o=JSON.parse(e.dataTransfer.getData('text/plain'))}catch{return}
+  const p=o&&proj(o.p);if(!p)return;
+  const g=ys.querySelector('.ygrid').getBoundingClientRect(),y=ui.yr||new Date().getFullYear(),a=new Date(y,0,1);
+  const i=Math.max(0,Math.floor((e.clientX-g.left)/YW));
+  (p.phases=p.phases||[]).push({s:dk(addDays(a,i)),e:dk(addDays(a,i+6))});
+  p.phases.sort((x,z)=>x.s<z.s?-1:1);document.body.classList.remove('dragging');save();renderMain();
+});
 document.addEventListener('dragover',e=>{
   const d=e.target.closest('[data-day]');if(!d)return;
   e.preventDefault();
@@ -1231,12 +1407,21 @@ document.addEventListener('drop',e=>{
 /* While a key is being recorded, global hotkeys are paused so the key reaches the page. */
 function setRec(v){ui.rec=v;HOST?.suspendHotkeys(!!v)}
 if(HOST){
+  // Desktop only: show or hide the timer strip that sits on the Windows taskbar.
+  document.querySelector('.brand .sync')?.insertAdjacentHTML('afterend','<button class="btn sm" data-act="bar" title="Маленька смужка з таймером на панелі задач Windows">Смужка на панелі задач: показати / сховати</button>'
+    +`<label class="autof" title="Програма сама відкриється (згорнутою) після входу в Windows"><input type="checkbox" id="autostart" ${HOST.autostartGet&&HOST.autostartGet()?'checked':''}> Запускати з Windows</label>`);
   HOST.onCmd(c=>{
     if(c.act==='pp')ppProject(c.p);
     else if(c.act==='start')startTimer(c.p);
     else if(c.act==='switch')state.timer?chooseProject(c.p):startTimer(c.p);
     else if(c.act==='pauseToggle')pauseToggle();
     else if(c.act==='stop')stopTimer();
+    // Auto-tracking (desktop/main.js decides; the planner only carries it out)
+    else if(c.act==='auto-start'&&proj(c.p)){startTimer(c.p);state.timer.auto=true;save();toast(`Автоматично: почато «${proj(c.p).name}».`)}
+    else if(c.act==='auto-stop'&&state.timer&&state.timer.auto)stopTimer();
+    else if(c.act==='auto-pause'&&state.timer&&state.timer.s){closeSegment(c.at);state.timer.autoPaused=c.why;save();render();
+      toast(c.why==='idle'?'Пауза: 5 хвилин без руху миші. Ці хвилини не зараховано.':'Пауза: на весь екран відкрита гра чи інша програма.')}
+    else if(c.act==='auto-resume'&&state.timer&&!state.timer.s&&state.timer.autoPaused){state.timer.s=Date.now();delete state.timer.autoPaused;save();render()}
   });
   HOST.onSaveError(msg=>toast(`Не вдалося записати дані на диск (${msg}). Програма повторить спробу, а копія збережена всередині програми.`));
   HOST.onHotkeyFailed(list=>{if(list.length)toast(`Ці клавіші вже зайняті іншою програмою: ${list.join(', ')}. Призначте інші на вкладці «Проєкти й клавіші».`)});

@@ -59,6 +59,8 @@ contextBridge.exposeInMainWorld('tydzenHost', {
   toggleBar: () => ipcRenderer.send('toggle-bar'),
   alert: a => ipcRenderer.send('alert', a),
   openDataFolder: () => ipcRenderer.send('open-data'),
+  autostartGet: () => ipcRenderer.sendSync('autostart-get'),
+  autostartSet: on => ipcRenderer.send('autostart-set', on),
 });
 
 contextBridge.exposeInMainWorld('barHost', {

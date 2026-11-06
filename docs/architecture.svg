@@ -13,7 +13,7 @@
   <rect x="300" y="88" width="360" height="92" rx="6" fill="#2A3AAB"/>
   <text x="480" y="114" text-anchor="middle" font-size="15" font-weight="700" fill="#F6F0E3">tydzen.html — the planner (one file)</text>
   <text x="480" y="136" text-anchor="middle" font-size="12" fill="#F6F0E3">State: projects · day plan (project + hours) · time entries · timer</text>
-  <text x="480" y="154" text-anchor="middle" font-size="12" fill="#F6F0E3">Views: weekly / monthly planner · projects · time reports</text>
+  <text x="480" y="154" text-anchor="middle" font-size="12" fill="#F6F0E3">Views: week / month planner · year planner · projects · time reports</text>
   <text x="480" y="170" text-anchor="middle" font-size="12" fill="#F6F0E3">Daily hour goals with an alert when a goal is reached</text>
 
   <!-- three hosts -->
@@ -64,13 +64,14 @@
       <text x="372" y="426">• one backup per day, keeps 30</text>
       <text x="372" y="444">• failed write: logged, retried in 3 s,</text>
       <text x="384" y="460">reported to the planner</text>
-      <text x="372" y="480">• global hotkeys (work in any program)</text>
+      <text x="372" y="480">• global start/pause hotkey (any program)</text>
       <text x="372" y="498">• tray: dot in the running project's colour</text>
       <text x="372" y="516">• autostart with Windows</text>
       <text x="372" y="534">• closing the window only hides it;</text>
       <text x="384" y="550">timer and strip keep running</text>
       <text x="372" y="570">• crashed window → reloaded from disk</text>
       <text x="372" y="590">• single instance only</text>
+      <text x="372" y="608">• auto-tracking: watch.ps1 (window title, idle)</text>
     </g>
 
     <rect x="668" y="360" width="232" height="80" rx="6" fill="#F6F0E3" stroke="#24272B"/>
@@ -79,7 +80,7 @@
     <text x="684" y="421">taskbar: project, timer, ▶ ❚❚ ■</text>
 
     <rect x="668" y="458" width="232" height="56" rx="6" fill="#F6F0E3" stroke="#24272B"/>
-    <text x="684" y="482" font-weight="700" font-size="13.5">Tray menu · hotkeys</text>
+    <text x="684" y="482" font-weight="700" font-size="13.5">Tray menu · hotkey</text>
     <text x="684" y="501">switch project, pause, stop</text>
 
     <rect x="668" y="532" width="232" height="86" rx="6" fill="#2E6476"/>

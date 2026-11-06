@@ -1,13 +1,14 @@
 {
   "name": "collaba-projects",
   "productName": "Collaba Projects",
-  "version": "1.3.0",
-  "description": "Планер проєктів з таймером і смужкою на панелі задач",
+  "version": "1.6.3",
+  "description": "Windows time tracker, weekly planner and year planner",
   "main": "main.js",
   "private": true,
   "scripts": {
     "start": "electron .",
-    "build": "node build.js"
+    "build": "node build.js",
+    "postinstall": "node fix-electron.js"
   },
   "devDependencies": {
     "electron": "^35.7.5",
