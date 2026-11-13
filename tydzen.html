@@ -888,9 +888,16 @@ function addForm(k,right){
     <label class="afl" style="display:flex;flex-direction:column;gap:4px">Додати вже витрачений час
       <select id="bt"><option value="0">—</option>${durOptions()}</select></label>${btns}</form>`;
 }
+/* Most recently active first: the latest tracked time, a running timer, or a day it was planned on (up to today). */
+function lastActivity(){
+  const m={},up=(p,v)=>{if(v>(m[p]||0))m[p]=v},today=todayK();
+  for(const e of allEntries())up(e.p,e.e);
+  for(const [k,l] of Object.entries(state.plan))if(k<=today){const v=parseDk(k).getTime();l.forEach(x=>up(x.p,v))}
+  return m;
+}
 function menuList(k){
   const ids=planOf(k).map(x=>x.p),q=ui.mq.trim().toLowerCase();
-  const ps=active().filter(p=>!ids.includes(p.id)&&(!q||p.name.toLowerCase().includes(q)));
+  const last=lastActivity(),ps=active().filter(p=>!ids.includes(p.id)&&(!q||p.name.toLowerCase().includes(q))).sort((x,y)=>(last[y.id]||0)-(last[x.id]||0));
   let h=ps.map(p=>`<button type="button" data-act="msel" data-p="${p.id}" aria-pressed="${ui.msel===p.id}"><span class="dot" style="--c:${p.color}"></span>${esc(p.name)}</button>`).join('');
   if(q&&!state.projects.some(p=>p.name.toLowerCase()===q))h+=`<button type="button" class="mnew" data-act="msel" data-p="new" aria-pressed="${ui.msel==='new'}">+ Створити проєкт «${esc(ui.mq.trim())}»</button>`;
   return h||'<div class="empty">Введіть назву, щоб створити новий проєкт</div>';
@@ -1074,6 +1081,11 @@ document.addEventListener('mouseup',()=>{
   // only the rows on show change places; hidden and archived projects keep theirs
   let k=0;state.projects=state.projects.map(x=>!x.archived&&(!x.yhide||ui.yshow)?vis[k++]:x);save();render();
 });
+/* The project list in the add-to-day form scrolls at a third of the usual wheel step. */
+document.addEventListener('wheel',e=>{
+  const l=e.target.closest('.mlist');if(!l||l.scrollHeight<=l.clientHeight)return;
+  e.preventDefault();l.scrollTop+=(e.deltaMode===1?e.deltaY*16:e.deltaY)/3;
+},{passive:false});
 /* Mouse wheel over the year scrolls it sideways. */
 document.addEventListener('wheel',e=>{
   const ys=e.target.closest('#yscroll');if(!ys||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;
