@@ -569,6 +569,11 @@ body.yreorder .yarch{opacity:0}
 .week .dh .dn,.week .today .dn{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;text-shadow:none!important;font-size:24px!important;margin-left:6px!important;color:var(--fg)!important;display:inline}
 .week .today .dn{color:var(--now)!important}
 .week .day>.adddy{align-self:center;padding:3px 22px;border-radius:999px}
+/* day header: date · + Проєкт (centred) · time, one line; no "сьогодні" word (the red number says it) */
+.week .day.today .dh b::after{content:none}
+.week .dh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;flex-wrap:nowrap}
+.week .dh .dtot{justify-self:end}
+.week .dh .adddy{padding:3px 18px;border-radius:999px;white-space:nowrap}
 </style>
 
 <div class="top">
@@ -1137,8 +1142,8 @@ function weekDays(mon){
     const d=addDays(mon,i),k=dk(d),items=planOf(k),[a,b]=dayRange(d),tt=totals(a,b),open=ui.menu&&ui.menu.k===k;
     const ph=items.reduce((s,x)=>s+(x.h||0),0);wplan+=ph;
     days+=`<section class="day ${k===today?'today':''} ${i>4&&!items.length?'off':''}" data-day="${k}">
-      <div class="dh"><div><b>${WD[i]}</b><span class="dn num">${d.getDate()}</span></div><span class="dtot num">${sum(tt)?fmtS(sum(tt)):''}</span></div>
-      ${open?addForm(k,false):`<button class="adddy" data-act="menu" data-d="${k}">+ Проєкт</button>`}
+      <div class="dh"><div><b>${WD[i]}</b><span class="dn num">${d.getDate()}</span></div>${open?'':`<button class="adddy" data-act="menu" data-d="${k}">+ Проєкт</button>`}<span class="dtot num">${sum(tt)?fmtS(sum(tt)):''}</span></div>
+      ${open?addForm(k,false):''}
       <div class="cards">${items.map(it=>card(it,k,tt,false)).join('')||(open?'':`<div class="empty">Вільний день</div>`)}</div>
     </section>`;
   }
