@@ -14,11 +14,11 @@ Designed by Maksym Lysogora (product idea, UX, visual style, testing). Built wit
 
 ## What it does
 
-- **Week and month planner.** Weeks scroll top to bottom and snap into a fixed frame. Drag a project onto a day and set planned hours. Click a card to unfold it: edit the time spent, change the goal, keep a checklist for that day.
+- **Week and month planner.** Weeks scroll top to bottom and snap into a fixed frame. Drag a project onto a day and set planned hours. Click a card to unfold it in place: edit the time spent, change the goal, keep a checklist for that day.
 - **Timer everywhere.** Start, pause and stop from the planner, from a slim strip on the Windows taskbar, from the tray menu or with one global hotkey (`Ctrl+Alt+Shift+P`) that works in any program.
 - **Automatic tracking (opt-in, per project).** Tick "Авто" and give a keyword, such as a project code in your file names. The timer starts when that word stays in the active window's title for 20 seconds and stops a minute after it goes away. It reads window titles only and takes no screenshots.
 - **Honest time.** Any running timer pauses after 5 minutes without mouse or keyboard input, and those minutes are not counted. It also pauses while a fullscreen game or app is in front, and resumes when you return.
-- **Year planner.** All twelve months in one horizontal strip. Drag a project tag onto the calendar, stretch the bar from start to deadline, keep several phases in one row.
+- **Year planner.** An endless horizontal strip of months that keeps going into the next years. Drag a project tag onto the calendar, stretch the bar from start to deadline, keep several phases in one row. Drag rows to reorder projects, and hide open-ended ones you don't need on the timeline.
 - **Time reports.** Totals for the week, month or all time, hours per day by project and the full list of entries. Forgotten work can be added by hand.
 - **Day goals.** An alert when the planned hours for a project are reached, with one click to switch to the next one.
 - **Light and dark themes**, with a palette of 20 muted printer's inks for projects.

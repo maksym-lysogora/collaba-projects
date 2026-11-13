@@ -172,7 +172,8 @@ function createMain(show) {
   if (show) mainWin.once('ready-to-show', () => { mainWin.maximize(); mainWin.show(); });
   // Closing the planner only hides it: the timer, hotkeys and strip keep working. Quit from the tray.
   mainWin.on('close', e => { if (!quitting) { e.preventDefault(); mainWin.hide(); } });
-  mainWin.webContents.on('did-finish-load', () => updateHotkeys(true));
+  mainWin.webContents.on('did-start-loading', () => { plannerReady = false; });
+  mainWin.webContents.on('did-finish-load', () => { updateHotkeys(true); plannerReady = true; inboxSent.clear(); scanInbox(); });
 }
 // Windows 11 doesn't allow real taskbar toolbars, so the strip is a small always-on-top window laid over the taskbar.
 function barGeometry() {
@@ -215,6 +216,7 @@ function toggleBar() {
   if (!bar) return;
   if (bar.isVisible()) bar.hide(); else bar.showInactive();
   settings.barVisible = bar.isVisible(); saveSettings(); updateTray();
+  cmd({ act: 'bar-state', v: bar.isVisible() }); // the planner's strip button shows on/off
 }
 
 /* ---------- messages from the planner and the strip ---------- */
@@ -226,6 +228,7 @@ ipcMain.on('save', (e, s) => {
 });
 ipcMain.on('suspend-hotkeys', (e, v) => { hotkeysSuspended = !!v; updateHotkeys(true); });
 ipcMain.on('toggle-bar', toggleBar);
+ipcMain.on('bar-visible', e => { e.returnValue = !!(bar && !bar.isDestroyed() && bar.isVisible()); });
 ipcMain.on('alert', (e, a) => send(bar, 'alert', a));
 ipcMain.on('open-data', () => shell.openPath(DATA_DIR));
 // Start with Windows (hidden: tray + taskbar strip only). Same setting as the tray menu checkbox.
@@ -298,6 +301,41 @@ function startWatcher() {
   watcher.on('exit', code => { watcher = null; if (!quitting) { logError('watch', 'exited ' + code + ', restarting in 30 s'); setTimeout(startWatcher, 30000); } });
 }
 
+/* ---------- inbox: plan changes from outside the app ----------
+   The planner rewrites the whole data.json on every change, so an outside edit of that file would be lost.
+   Another program drops data/inbox/<name>.json = { "ops": [...] } instead (write it under another name, then rename).
+   The planner applies it, and only then the file moves to inbox/done. While the app is closed, files simply wait. */
+const INBOX_DIR = path.join(DATA_DIR, 'inbox'), INBOX_DONE = path.join(INBOX_DIR, 'done'), INBOX_KEEP = 200;
+const inboxSent = new Set();
+let plannerReady = false;
+function finishInbox(file, doc) {
+  try {
+    fs.mkdirSync(INBOX_DONE, { recursive: true });
+    fs.writeFileSync(path.join(INBOX_DONE, file), JSON.stringify(doc, null, 1), 'utf8');
+    fs.rmSync(path.join(INBOX_DIR, file), { force: true });
+    const all = fs.readdirSync(INBOX_DONE).filter(f => f.endsWith('.json')).sort();
+    all.slice(0, Math.max(0, all.length - INBOX_KEEP)).forEach(f => fs.unlinkSync(path.join(INBOX_DONE, f)));
+  } catch (e) { logError('inbox', e); }
+}
+function scanInbox() {
+  if (!plannerReady) return;
+  let files;
+  try { files = fs.readdirSync(INBOX_DIR).filter(f => f.endsWith('.json')).sort(); } catch { return; }
+  for (const file of files) {
+    if (inboxSent.has(file)) continue;
+    const doc = readJson(path.join(INBOX_DIR, file));
+    if (!doc || !Array.isArray(doc.ops)) { logError('inbox', 'unreadable file ' + file); finishInbox(file, { error: 'unreadable', source: doc }); continue; }
+    inboxSent.add(file);
+    cmd({ act: 'inbox', file, ops: doc.ops });
+  }
+}
+ipcMain.on('inbox-done', (e, file, result) => {
+  const name = path.basename(String(file));
+  const doc = readJson(path.join(INBOX_DIR, name)) || {};
+  finishInbox(name, { ...doc, result, appliedAt: new Date().toISOString() });
+  inboxSent.delete(name);
+});
+
 /* ---------- lifecycle ---------- */
 app.whenReady().then(() => {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -307,6 +345,7 @@ app.whenReady().then(() => {
   createMain(!process.argv.includes('--hidden'));
   createBar();
   startWatcher();
+  setInterval(scanInbox, 3000);
   tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
   tray.on('click', showMain);
   updateTray();
