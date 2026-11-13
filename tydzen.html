@@ -596,6 +596,14 @@ body.yreorder .yarch{opacity:0}
 .card.wfill.full::before{-webkit-mask:none;mask:none}
 .card.wfill>*{position:relative;z-index:1}
 .card.wfill>.x{position:absolute}
+/* tray tags: a small ✕ on hover hides a tag; a red bar shows where a dragged tag will land */
+.tray .chip{position:relative}
+.chx{border:0;background:none;color:inherit;padding:0 0 0 2px;margin-right:-4px;font-size:11px;line-height:1;opacity:0;cursor:pointer;width:0;overflow:hidden;transition:opacity .12s}
+.tray .chip:hover .chx,.tray .chip.thid .chx{opacity:.75;width:12px}
+.chx:hover{opacity:1!important}
+.tray .chip.thid{opacity:.45}
+.chip.ins-l::before,.chip.ins-r::before{content:"";position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--now)}
+.chip.ins-l::before{left:-5px}.chip.ins-r::before{right:-5px}
 </style>
 
 <div class="top">
@@ -1008,7 +1016,9 @@ function commitAdd(){
   ui.menu=null;save();render();
 }
 function tray(){
-  return `<div class="tray">${active().length?`<span>Перетягніть на день:</span>`+active().map(p=>`<span class="chip" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from=""><span class="dot"></span>${esc(p.name)}</span>`).join(''):'<span>Проєктів ще немає.</span>'}<button class="chip chip-new" data-act="yadd" title="Створити новий проєкт">+ Новий проєкт</button></div>`;
+  // tags hidden from the tray (p.thide) stay active everywhere else; "Сховані: N" unfolds them, dimmed, with a way back
+  const all=active(),ps=all.filter(p=>!p.thide||ui.tshow),nHid=all.filter(p=>p.thide).length;
+  return `<div class="tray">${all.length?`<span>Перетягніть на день:</span>`+ps.map(p=>`<span class="chip ${p.thide?'thid':''}" style="--c:${p.color}" draggable="true" data-drag="${p.id}" data-from="" title="Перетягніть на день або вздовж ряду, щоб змінити порядок"><span class="dot"></span>${esc(p.name)}<button class="chx" data-act="thide" data-p="${p.id}" title="${p.thide?'Знову показувати тут':'Сховати з цього ряду (проєкт лишається активним)'}">${p.thide?'↺':'✕'}</button></span>`).join(''):'<span>Проєктів ще немає.</span>'}<button class="chip chip-new" data-act="yadd" title="Створити новий проєкт">+ Новий проєкт</button>${nHid?`<button class="lnk" data-act="tshow">${ui.tshow?'Згорнути сховані':`Сховані: ${nHid}`}</button>`:''}</div>`;
 }
 function viewPlan(){
   const seg=`<div class="seg" role="group" aria-label="Вигляд"><button data-act="view" data-v="week" aria-pressed="${ui.view==='week'}">Тиждень</button><button data-act="view" data-v="month" aria-pressed="${ui.view==='month'}">Місяць</button></div>`;
@@ -1129,6 +1139,23 @@ document.addEventListener('wheel',e=>{
   const l=e.target.closest('.mlist');if(!l||l.scrollHeight<=l.clientHeight)return;
   e.preventDefault();l.scrollTop+=(e.deltaMode===1?e.deltaY*16:e.deltaY)/3;
 },{passive:false});
+/* Reorder tags: drag a tag onto another one in the same row; it lands before or after it (by which half you drop on).
+   The order is the order of state.projects, shared with the year planner and lists. */
+let trayDrag=null;
+document.addEventListener('dragstart',e=>{const c=e.target.closest&&e.target.closest('.tray .chip[data-drag]');trayDrag=c?c.dataset.drag:null},true);
+document.addEventListener('dragover',e=>{
+  const c=e.target.closest('.tray .chip[data-drag]');document.querySelectorAll('.chip.ins-l,.chip.ins-r').forEach(x=>x.classList.remove('ins-l','ins-r'));
+  if(!c||!trayDrag||c.dataset.drag===trayDrag)return;e.preventDefault();
+  const r=c.getBoundingClientRect();c.classList.add(e.clientX<r.left+r.width/2?'ins-l':'ins-r');
+});
+document.addEventListener('drop',e=>{
+  const c=e.target.closest('.tray .chip[data-drag]');if(!c||!trayDrag)return;e.preventDefault();e.stopPropagation();
+  const id=trayDrag;trayDrag=null;if(c.dataset.drag===id){renderMain();return}
+  const r=c.getBoundingClientRect(),after=e.clientX>=r.left+r.width/2,p=proj(id);
+  const rest=state.projects.filter(x=>x!==p),i=rest.findIndex(x=>x.id===c.dataset.drag);
+  rest.splice(after?i+1:i,0,p);state.projects=rest;document.body.classList.remove('dragging');save();render();
+},true);
+document.addEventListener('dragend',()=>{trayDrag=null;document.querySelectorAll('.chip.ins-l,.chip.ins-r').forEach(x=>x.classList.remove('ins-l','ins-r'))});
 /* Mouse wheel over the year scrolls it sideways. */
 document.addEventListener('wheel',e=>{
   const ys=e.target.closest('#yscroll');if(!ys||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;
@@ -1479,6 +1506,8 @@ function onClick(e){
   else if(a==='ydel'){const p=proj(d.p);if(p&&p.phases){p.phases.splice(Number(d.i),1);save();renderMain()}}
   else if(a==='palpick'){closePalette();if(d.p==='new'){ui.newColor=d.c;renderMain();$('#np')?.focus()}else{const p=proj(d.p);if(p){p.color=d.c;save();render()}}}
   else if(a==='color'){ui.newColor=d.c;document.querySelectorAll('#newp .sw').forEach(s=>s.setAttribute('aria-pressed',s.dataset.c===d.c))}
+  else if(a==='thide'){const p=proj(d.p);if(p){p.thide=!p.thide;save();renderMain()}}
+  else if(a==='tshow'){ui.tshow=!ui.tshow;renderMain()}
   else if(a==='yhide'){const p=proj(d.p);if(p){p.yhide=!p.yhide;save();renderMain()}}
   else if(a==='yshow'){ui.yshow=!ui.yshow;renderMain()}
   else if(a==='archive'){const p=proj(d.p);p.archived=!p.archived;save();render();if(p.archived)toast(`«${p.name}» в архіві: з календаря й тегів прибрано, облік часу зберігся. Повернути — у списку проєктів.`)}
