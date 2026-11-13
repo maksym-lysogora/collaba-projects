@@ -556,6 +556,19 @@ body.yreorder .yarch{opacity:0}
 .yname.yhid .yarch{opacity:1}
 .yadd{gap:4px}
 .yshow{margin-left:auto}
+/* week cards: name and time on one line, the card itself grows with the hours spent */
+.card:not(.compact):not(.open){flex-direction:row;flex-wrap:nowrap;align-items:center;align-content:flex-start;column-gap:10px;row-gap:0;padding-top:5px;padding-bottom:5px}
+.card:not(.compact):not(.open) .nm{flex:1 1 auto;min-width:min(45%,7em);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* from 1.5 h there is room for two lines: a long name keeps its line and the time drops below it */
+.card.tall:not(.open){flex-wrap:wrap}
+.card.tall:not(.open) .nm{min-width:0;white-space:normal;flex-basis:auto}
+.card:not(.compact):not(.open) .cf{min-height:34px}
+.card.plan:not(.compact)::after{top:17px}
+.card:not(.compact) .x{top:12px}
+/* week day header: plain day number, no circle (today is marked by its red number); "+ Проєкт" sits on top, centred */
+.week .dh .dn,.week .today .dn{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;text-shadow:none!important;font-size:24px!important;margin-left:6px!important;color:var(--fg)!important;display:inline}
+.week .today .dn{color:var(--now)!important}
+.week .day>.adddy{align-self:center;padding:3px 22px;border-radius:999px}
 </style>
 
 <div class="top">
@@ -821,17 +834,18 @@ function renderMain(){
 }
 
 /* Timer controls and the running highlight live only on today's cards; other days just show their own tracked time. */
+/* In the week view a card is as tall as the time spent on it: one hour (the minimum, even for less) = CARD_H px. */
+const CARD_H=44;
 function card(it,k,tt,compact){
   const id=it.p,p=proj(id),isToday=k===todayK(),rs=isToday?runState(id):'',ms=tt[id]||0,planned=!ms&&!rs;
   const goal=(it.h||0)*36e5,over=goal&&ms>=goal;
   const tm=goal?`${fmtS(ms)} / ${hLabel(it.h)}`:ms?(compact?fmtS(ms):fmt(ms)):'+ ціль';
   const open=ui.exp===k+'|'+id,dt=it.tasks||[];
-  return `<div class="card ${compact?'compact':''} ${rs} ${planned?'plan':''} ${open?'open':''}" style="--c:${p.color}" draggable="${open?'false':'true'}" data-drag="${id}" data-from="${k}" title="${open?'':'Клік — розгорнути'}">
+  return `<div class="card ${compact?'compact':''} ${!compact&&ms>=54e5?'tall':''} ${rs} ${planned?'plan':''} ${open?'open':''}" style="--c:${p.color}${compact?'':`;min-height:${Math.round(Math.max(1,ms/36e5)*CARD_H)}px`}" draggable="${open?'false':'true'}" data-drag="${id}" data-from="${k}" title="${open?'':'Клік — розгорнути'}">
     <button class="x" data-act="rm-plan" data-d="${k}" data-p="${id}" title="Прибрати з дня" aria-label="Прибрати з дня">✕</button>
     <div class="nm">${esc(p.name)}${dt.length?`<span class="tk num" title="Задачі на день">${dt.filter(x=>x.done).length}/${dt.length}</span>`:''}</div>
     <div class="cf"><button class="tm num ${over?'over':''} ${!goal&&!ms?'add':''}" data-act="cexp" data-d="${k}" data-p="${id}" title="Розгорнути: час, ціль, задачі">${tm}</button>
       ${isToday?`<button class="pp" data-act="pp" data-p="${id}" title="${rs==='run'?'Пауза':rs==='paused'?'Продовжити':'Запустити таймер'}">${rs==='run'?IC.pause:IC.play}</button>`:''}</div>
-    ${goal?`<div class="prog ${over?'over':''}"><i style="width:${Math.min(100,ms/goal*100)}%"></i></div>`:''}
     ${open?cardPanel(it,k,ms):''}
   </div>`;
 }
@@ -1123,9 +1137,9 @@ function weekDays(mon){
     const d=addDays(mon,i),k=dk(d),items=planOf(k),[a,b]=dayRange(d),tt=totals(a,b),open=ui.menu&&ui.menu.k===k;
     const ph=items.reduce((s,x)=>s+(x.h||0),0);wplan+=ph;
     days+=`<section class="day ${k===today?'today':''} ${i>4&&!items.length?'off':''}" data-day="${k}">
-      <div class="dh"><div><b>${WD[i]}</b><span class="dn num">${d.getDate()}</span></div><span class="dtot num">${sum(tt)?fmt(sum(tt)):''}${ph?` з ${hLabel(ph)}`:''}</span></div>
-      <div class="cards">${items.map(it=>card(it,k,tt,false)).join('')||(open?'':`<div class="empty">Вільний день</div>`)}</div>
+      <div class="dh"><div><b>${WD[i]}</b><span class="dn num">${d.getDate()}</span></div><span class="dtot num">${sum(tt)?fmtS(sum(tt)):''}</span></div>
       ${open?addForm(k,false):`<button class="adddy" data-act="menu" data-d="${k}">+ Проєкт</button>`}
+      <div class="cards">${items.map(it=>card(it,k,tt,false)).join('')||(open?'':`<div class="empty">Вільний день</div>`)}</div>
     </section>`;
   }
   return {days,wplan};
@@ -1138,7 +1152,7 @@ function weekInfo(n){
   const mon=weekMon(n),wt=sum(totals(mon.getTime(),addDays(mon,7).getTime()));
   let wplan=0;for(let i=0;i<7;i++)wplan+=planOf(dk(addDays(mon,i))).reduce((s,x)=>s+(x.h||0),0);
   const th=addDays(mon,3);
-  return {title:`${MON[th.getMonth()]} ${th.getFullYear()}`,info:`Тиждень ${isoWeek(mon)} · відстежено <b>${fmt(wt)}</b>${wplan?` з ${hLabel(wplan)}`:''}`};
+  return {title:`${MON[th.getMonth()]} ${th.getFullYear()}`,info:`Тиждень ${isoWeek(mon)} · відстежено <b>${fmtS(wt)}</b>`};
 }
 function viewWeek(seg){
   if(ui.base==null||ui.wk<ui.base-WK_BEFORE||ui.wk>ui.base+WK_AFTER)ui.base=ui.wk;

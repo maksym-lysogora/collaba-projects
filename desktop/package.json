@@ -1,7 +1,7 @@
 {
   "name": "collaba-projects",
   "productName": "Collaba Projects",
-  "version": "1.7.4",
+  "version": "1.8.0",
   "description": "Windows time tracker, weekly planner and year planner",
   "main": "main.js",
   "private": true,
